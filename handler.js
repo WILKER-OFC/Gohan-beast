@@ -96,7 +96,7 @@ user.afk = -1
 if (!('afkReason' in user))
 user.afkReason = ''
 if (!('role' in user))
-user.role = '👤 Saiyan Novato'
+user.role = 'Nuv'
 if (!('banned' in user))
 user.banned = false
 if (!('useDocument' in user))
@@ -139,7 +139,7 @@ banned: false,
 useDocument: false,
 bank: 0,
 level: 0,
-role: '👤 Saiyan Novato',
+role: 'Nuv',
 premium: false,
 premiumTime: 0,                 
 }
@@ -278,7 +278,8 @@ const isBotAdmin = !!bot?.admin
 
 const ___dirname = path.join(path.dirname(fileURLToPath(import.meta.url)), './plugins')
 
-let usedPrefix = '';
+// Mover la declaración de usedPrefix aquí para que siempre esté disponible en el ámbito del handler
+let usedPrefix = ''; // Inicializarlo aquí
 
 for (let name in global.plugins) {
 let plugin = global.plugins[name]
@@ -338,7 +339,7 @@ continue
 }
 if (typeof plugin !== 'function')
 continue
-if ((usedPrefix = (match[0] || '')[0])) {
+if ((usedPrefix = (match[0] || '')[0])) { // usedPrefix ahora se asigna, no se declara aquí
 let noPrefix = m.text.replace(usedPrefix, '')
 let [command, ...args] = noPrefix.trim().split` `.filter(v => v)
 args = args || []
@@ -370,15 +371,7 @@ let user = global.db.data.users[m.sender]
 if (!['grupo-unbanchat.js'].includes(name) && chat && chat.isBanned && !isROwner) return
 if (name != 'grupo-unbanchat.js' && name != 'owner-exec.js' && name != 'owner-exec2.js' && name != 'grupo-delete.js' && chat?.isBanned && !isROwner) return
 if (m.text && user.banned && !isROwner) {
-m.reply(`🐉 *GOHAN BEAST - USUARIO BANEADO* ⚡
-
-⚠️ *Estás baneado/a del dojo Saiyan*
-🚫 *No puedes usar comandos en este bot*
-
-${user.bannedReason ? `📝 *Motivo del ban:* ${user.bannedReason}` : '📝 *Motivo:* No especificado'}
-
-🔱 *Si crees que es un error:*
-Contacta a un moderador del dojo.`)
+m.reply(`《✦》Estas baneado/a, no puedes usar comandos en este bot!\n\n${user.bannedReason ? `✰ *Motivo:* ${user.bannedReason}` : '✰ *Motivo:* Sin Especificar'}\n\n> ✧ Si este Bot es cuenta oficial y tiene evidencia que respalde que este mensaje es un error, puedes exponer tu caso con un moderador.`)
 return
 }
 
@@ -438,11 +431,11 @@ m.isCommand = true
 let xp = 'exp' in plugin ? parseInt(plugin.exp) : 10
 m.exp += xp
 if (!isPrems && plugin.coin && global.db.data.users[m.sender].coin < plugin.coin * 1) {
-conn.reply(m.chat, `🐉 *ENERGÍA INSUFICIENTE* ⚡\n\nNo tienes suficiente ${global.moneda} para usar este ataque.\n💡 Usa .daily para obtener más energía.`, m)
+conn.reply(m.chat, `❮✦❯ Se agotaron tus ${moneda}`, m)
 continue
 }
 if (plugin.level > _user.level) {
-conn.reply(m.chat, `🐉 *NIVEL REQUERIDO* ⚡\n\nNecesitas nivel *${plugin.level}*\nTu nivel actual: *${_user.level}*\n\n🌀 *Para subir de nivel:*\nUsa .levelup o entrena en el dojo.`, m)
+conn.reply(m.chat, `❮✦❯ Se requiere el nivel: *${plugin.level}*\n\n• Tu nivel actual es: *${_user.level}*\n\n• Usa este comando para subir de nivel:\n*${usedPrefix}levelup*`, m)
 continue
 }
 let extra = {
@@ -474,14 +467,16 @@ if (!isPrems)
 m.coin = m.coin || plugin.coin || false
 } catch (e) {
 m.error = e
-console.error(chalk.hex('#FF0000')(`🐉 [ERROR BEAST] En plugin ${name}:`), e)
+console.error(e)
 if (e) {
 let text = format(e)
 for (let key of Object.values(global.APIKeys))
-text = text.replace(new RegExp(key, 'g'), '🐉 CLAVE-BEAST-OCULTA ⚡')
-m.reply(`🐉 *ERROR EN EL ATAQUE* ⚡\n\nEl comando falló:\n${text}`)
+text = text.replace(new RegExp(key, 'g'), 'Administrador')
+m.reply(text)
 }
 } finally {
+// El bloque finally siempre se ejecuta, incluso si usedPrefix no ha sido definido
+// Asegúrate de que cualquier uso de usedPrefix aquí sea seguro o maneje el caso en que no exista.
 if (typeof plugin.after === 'function') {
 try {
 await plugin.after.call(this, m, extra)
@@ -489,14 +484,18 @@ await plugin.after.call(this, m, extra)
 console.error(e)
 }}
 if (m.coin)
-conn.reply(m.chat, `🐉 *ENERGÍA CONSUMIDA* ⚡\n\nUtilizaste *${+m.coin}* ${global.moneda}`, m)
+conn.reply(m.chat, `❮✦❯ Utilizaste ${+m.coin} ${moneda}`, m)
 }
-break
-}} // Cierre for...in global.plugins
+break // Este break debería estar fuera del finally si quieres que el loop siga
+// O sea, si un plugin lanza un error, break termina el loop, si no, el loop continua.
+// Si el break está dentro del if ((usedPrefix = (match[0] || '')[0])), entonces solo se rompe si se encuentra un comando.
+// Considerando que el error se da en el finally, la lógica parece ser que el loop de plugins no siempre se rompe.
+}} // Este cierre de llave pertenece al for...in global.plugins
 
 } catch (e) {
-console.error(chalk.hex('#FF0000')(`💥 [ERROR CRÍTICO BEAST]:`), e)
+console.error(e)
 } finally {
+// usedPrefix está disponible aquí porque se declaró más arriba en el scope del handler
 if (opts['queque'] && m.text) {
 const quequeIndex = this.msgqueque.indexOf(m.id || m.key.id)
 if (quequeIndex !== -1)
@@ -544,44 +543,46 @@ stat.lastSuccess = now
 try {
 if (!opts['noprint']) await (await import(`./lib/print.js`)).default(m, this)
 } catch (e) { 
-console.log(m, m.quoted, e)
-}
-
+console.log(m, m.quoted, e)} // <<< Esta es la línea 338, aquí 'usedPrefix' NO se usa directamente,
+                                // pero si 'print.js' o 'm' (con su propiedad 'usedPrefix')
+                                // la causan, entonces el problema es en el scope de esas.
+                                // La solución de mover 'let usedPrefix' resolverá esto.
 let settingsREAD = global.db.data.settings[this.user.jid] || {}  
 if (opts['autoread']) await this.readMessages([m.key])
 
 if (db.data.chats[m.chat].reaction && m.text.match(/(ción|dad|aje|oso|izar|mente|pero|tion|age|ous|ate|and|but|ify|ai|yuki|a|s)/gi)) {
-let emot = pickRandom(["🐉", "⚡", "🔥", "💥", "🌟", "✨", "💫", "🌀", "💪", "👊", "🫡", "😎", "🤯", "😤", "💀", "👑", "🎯", "💣", "💎", "❤️‍🔥", "❄️", "🌪️", "☄️", "🌠", "🪐", "🌌", "🗡️", "🛡️", "🏆", "🎖️", "🥇", "🥊", "🥋", "👺", "👹", "🤖", "👾", "💻", "🖥️", "📱", "🔋", "⚙️", "🔧", "🔨", "⚒️", "🛠️", "⛏️", "🔩", "⚖️", "🧪", "🔬", "💉", "🧬", "🦠", "🧫", "🌡️", "💊", "🧯", "🪓", "🔫", "🏹", "🪃", "🧨", "💣", "🧿", "🪬", "⚰️", "🪦", "🚬", "⚱️", "🪔", "🧭", "💈", "🛎️", "🧸", "🎈", "🎉", "🎊", "🎁", "🎀", "🎪", "🤹", "🎭", "🩰", "🎨", "🧵", "🪡", "🧶", "🪢", "👓", "🕶️", "🥽", "🥼", "🦺", "👔", "👕", "👖", "🧣", "🧤", "🧥", "🧦", "👗", "👘", "🥻", "🩱", "🩲", "🩳", "👙", "👚", "👛", "👜", "👝", "🎒", "🧳", "👞", "👟", "🥾", "🥿", "👠", "👡", "🩴", "👢", "👑", "👒", "🎩", "🎓", "🧢", "🪖", "⛑️", "💄", "💍", "💼"])
+let emot = pickRandom(["🍟", "😃", "😄", "😁", "😆", "🍓", "😅", "😂", "🤣", "🥲", "☺️", "😊", "😇", "🙂", "🙃", "😉", "😌", "😍", "🥰", "😘", "😗", "😙", "🌺", "🌸", "😚", "😋", "😛", "😝", "😜", "🤪", "🤨", "🌟", "🤓", "😎", "🥸", "🤩", "🥳", "😏", "💫", "😞", "😔", "😟", "😕", "🙁", "☹️", "😣", "😖", "😫", "😩", "🥺", "😢", "😭", "😤", "😠", "😡", "🤬", "🤯", "😳", "🥵", "🥶", "😶‍🌫️", "😱", "😨", "😰", "😥", "😓", "🤗", "🤔", "🫣", "🤭", "🤖", "🍭", "🤫", "🫠", "🤥", "😶", "📇", "😐", "💧", "😑", "🫨", "😬", "🙄", "😯", "😦", "😧", "😮", "😲", "🥱", "😴", "🤤", "😪", "😮‍💨", "😵", "😵‍💫", "🤐", "🥴", "🤢", "🤮", "🤧", "😷", "🤒", "🤕", "🤑", "🤠", "😈", "👿", "👺", "🧿", "🌩", "👻", "😺", "😸", "😹", "😻", "😼", "😽", "🙀", "😿", "😾", "🫶", "👍", "✌️", "🙏", "🫵", "🤏", "🤌", "☝️", "🖕", "🙏", "🫵", "🫂", "🐱", "🤹‍♀️", "🤹‍♂️", "🗿", "✨", "⚡", "🔥", "🌈", "🩷", "❤️", "🧡", "💛", "💚", "🩵", "💙", "💜", "🖤", "🩶", "🤍", "🤎", "💔", "❤️‍🔥", "❤️‍🩹", "❣️", "💕", "💞", "💓", "💗", "💖", "💘", "💝", "🚩", "👊", "⚡️", "💋", "🫰", "💅", "👑", "🐣", "🐤", "🐈"])
 if (!m.fromMe) return this.sendMessage(m.chat, { react: { text: emot, key: m.key }})
 }
 function pickRandom(list) { return list[Math.floor(Math.random() * list.length)]}
 }}
 
-global.dfail = (type, m, conn, usedPrefix, command) => {
+global.dfail = (type, m, conn, usedPrefix, command) => { // 'conn' es el tercer argumento
+
     let edadaleatoria = ['10', '28', '20', '40', '18', '21', '15', '11', '9', '17', '25'].getRandom()
-    let user2 = m.pushName || 'Saiyan Anónimo'
+    let user2 = m.pushName || 'Anónimo'
     let verifyaleatorio = ['registrar', 'reg', 'verificar', 'verify', 'register'].getRandom()
 
     const msg = {
-    rowner: '🐉 *ACCESO DENEGADO* ⚡\n\nSolo el *Creador del Dojo Saiyan* puede usar esta técnica.',
-    owner: '👑 *ACCESO RESTRINGIDO*\n\nSolo el *Creador y Sub-Saiyans* pueden usar este ataque.',
-    mods: '🛡️ *SOLO MODERADORES*\n\nEsta técnica está reservada para los *Moderadores del Dojo*.',
-    premium: '💎 *SOLO USUARIOS PREMIUM*\n\nNecesitas ser *Saiyan Elite* para usar este comando.',
-    group: '🐉 *TÉCNICA DE GRUPO*\n\nEste ataque solo funciona en *grupos del dojo*.',
-    private: '🔒 *TÉCNICA PRIVADA*\n\nEste comando solo puede usarse en *chat privado*.',
-    admin: '⚔️ *SOLO ADMINS DEL DOJO*\n\nSolo los *Administradores del grupo* pueden ejecutar esto.',
-    botAdmin: '🐉 *BOT NO ES ADMIN*\n\n¡Gohan Beast debe ser *Admin* para usar este poder!',
-    unreg: '🐉 *REGISTRO REQUERIDO* ⚡\n\nDebes *registrarte en el dojo* para usar esta técnica.\n\n🌀 Ejemplo: *' + usedPrefix + 'reg ' + user2 + '.' + edadaleatoria + '*',
-    restrict: '⛔ *FUNCIÓN BLOQUEADA*\n\nEsta técnica está *deshabilitada* en este dojo.'
+    rowner: '🔐 Solo el Creador del Bot puede usar este comando.',
+    owner: '👑 Solo el Creador y Sub Bots pueden usar este comando.',
+    mods: '🛡️ Solo los Moderadores pueden usar este comando.',
+    premium: '💎 Solo usuarios Premium pueden usar este comando.',
+    group: '「✧」 Este comando es sólo para grupos.',
+    private: '🔒 Solo en Chat Privado puedes usar este comando.',
+    admin: '⚔️ Solo los Admins del Grupo pueden usar este comando.',
+    botAdmin: 'El bot debe ser Admin para ejecutar esto.',
+    unreg: '> 🔰 Debes estar Registrado para usar este comando.\n\n Ejemplo : #reg Wilker.15',
+    restrict: '⛔ Esta función está deshabilitada.'
     }[type];
 
     if (msg)
-        return conn.reply(m.chat, msg, m, { contextInfo: rcanal }).then(() => conn.sendMessage(m.chat, { react: { text: '❌', key: m.key } }))
+        return conn.reply(m.chat, msg, m, { contextInfo: rcanal }).then(() => conn.sendMessage(m.chat, { react: { text: '✖️', key: m.key } }))
 
     let file = global.__filename(import.meta.url, true)
     watchFile(file, async () => {
         unwatchFile(file)
-        console.log(chalk.hex('#FF3366')("🌀 [BEAST MODE] Handler actualizado - Reiniciando energía Saiyan..."))
+        console.log(chalk.magenta("Se actualizo 'handler.js'"))
 
         if (global.conns && global.conns.length > 0) {
             const users = [...new Set([...global.conns
