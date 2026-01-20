@@ -1,7 +1,7 @@
 # 🐉 GOHAN BEAST BOT
 
 <p align="center">
-  <img src="https://i.imgur.com/3PiXKXN.png" width="300" alt="Gohan Beast Logo">
+  <img src="https://d.uguu.se/lDAETMOY.jpeg" width="300" alt="Gohan Beast Logo">
 </p>
 
 <p align="center">
