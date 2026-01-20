@@ -1,6 +1,6 @@
-let handler = async (m, { conn, usedPrefix }) => {
+let handler = async (m, { conn }) => {
   try {
-    // Información de contacto directa
+    // Información de contacto directa - SIN BOTONES
     const infoDonacion = `
 ╭───「 💰 *DONACIONES* 💰 」─
 │
@@ -31,34 +31,13 @@ let handler = async (m, { conn, usedPrefix }) => {
 
 ⚡ *Contacta ahora mismo para más información*
 `
-
-    // Botones interactivos
-    const buttons = [
-      { 
-        buttonId: `${usedPrefix}owner`, 
-        buttonText: { displayText: '👑 Contactar Owner' }, 
-        type: 1 
-      },
-      { 
-        buttonId: `${usedPrefix}menu`, 
-        buttonText: { displayText: '📋 Volver al Menú' }, 
-        type: 1 
-      },
-      { 
-        buttonId: `https://wa.me/5492644893953`, 
-        buttonText: { displayText: '📞 WhatsApp Directo' }, 
-        type: 2  // Tipo 2 para enlace externo
-      }
-    ]
     
-    // Enviar mensaje con imagen
+    // Enviar mensaje con imagen SIN BOTONES
     await conn.sendMessage(m.chat, {
       image: { url: 'https://d.uguu.se/FLmbfoqM.jpeg' },
       caption: infoDonacion,
       footer: '⚡ Gohan Beast Bot - Donaciones',
-      buttons: buttons,
-      headerType: 4,
-      mentions: [m.sender]
+      headerType: 4
     }, { quoted: m })
     
   } catch (error) {
