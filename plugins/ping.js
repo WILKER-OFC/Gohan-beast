@@ -73,6 +73,6 @@ handler.tags = ['info', 'beast']
 handler.command = ['ping', 'p', 'latencia', 'beastping']
 handler.limit = false
 handler.premium = false
-handler.register = true
+handler.register = false
 
 export default handler
