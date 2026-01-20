@@ -1,5 +1,5 @@
 console.clear()
-console.log('🌀 Iniciando Gohan Beast Bot...')
+console.log('🌀 Iniciando Gohan beast bot...')
 
 import { join, dirname } from 'path'
 import { createRequire } from 'module'
@@ -11,37 +11,21 @@ import cfonts from 'cfonts'
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const require = createRequire(__dirname)
 
-// Título principal con estilo Beast
-cfonts.say('✧ GOHAN BEAST ✧', {
-  font: 'block',
+
+cfonts.say('✧ Michi Wa ✧', {
+  font: 'block',        
   align: 'center',
-  gradient: ['#f06', '#ffcc00', '#ff3366'],
-  background: 'transparent',
-  letterSpacing: 1,
-  lineHeight: 1,
-  space: true,
-  maxLength: '0',
+  gradient: ['cyan', 'magenta'],
   env: 'node'
 })
 
-// Sub título
-cfonts.say('🔥 By Wilker | Beast Mode Activated 🔥', {
-  font: 'console',
+
+cfonts.say('🌀 made by Wilker x Gohan beast📍', {
+  font: 'console',     
   align: 'center',
-  gradient: ['white', '#ffcc00'],
-  background: 'transparent',
-  letterSpacing: 0,
-  lineHeight: 1,
-  space: true,
+  gradient: ['cyan', 'white'],
   env: 'node'
 })
-
-console.log('\n')
-console.log('⚡ Transformación Beast completada al 100%')
-console.log('💥 Sistema de poder: MAXIMUM')
-console.log('🌀 Modo: Gohan Beast Ultrainstinct')
-console.log('📱 Conectando a WhatsApp...')
-console.log('\n')
 
 let isWorking = false
 
@@ -60,56 +44,18 @@ async function launch(scripts) {
     let child = fork()
 
     child.on('exit', (code) => {
-      if (code !== 0) {
-        console.log(`⚠️ Transformación interrumpida! Código de error: ${code}`)
-        console.log('🔄 Reactivando células Saiyan...')
-      } else {
-        console.log('✅ Proceso terminado limpiamente')
-      }
-      
+      console.log(`⚠️ Proceso terminado con código ${code}`)
       isWorking = false
-      
-      // Intentar relanzar
-      setTimeout(() => {
-        launch(scripts)
-      }, 2000)
+      launch(scripts)
 
       if (code === 0) return
-      
       watchFile(args[0], () => {
         unwatchFile(args[0])
-        console.log('🌀 Potencial oculto liberado! Reiniciando...')
+        console.log('🔄 Archivo actualizado, reiniciando...')
         launch(scripts)
       })
-    })
-    
-    child.on('message', (data) => {
-      if (data && data === 'ready') {
-        console.log('✅ Gohan Beast Bot conectado y listo!')
-        console.log('💪 Poder: Máximo | Estado: Beast Mode')
-        console.log('📊 Esperando comandos...')
-        console.log('\n')
-      }
     })
   }
 }
 
-// Animación de carga estilo Dragon Ball
-console.log('🌀 Activando Beast Mode:')
-const beastPhases = [
-  '▰ Cargando energía Saiyan...',
-  '▰▰ Potencial oculto liberándose...',
-  '▰▰▰ Transformación Beast iniciada...',
-  '▰▰▰▰ Poder al máximo!',
-  '▰▰▰▰▰ ¡GOHAN BEAST ACTIVADO!'
-]
-
-beastPhases.forEach((phase, i) => {
-  setTimeout(() => {
-    console.log(phase)
-    if (i === beastPhases.length - 1) {
-      console.log('\n' + '='.repeat(50))
-      launch(['main.js'])
-    }
-  }, i * 800)
-})
+launch(['main.js'])
