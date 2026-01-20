@@ -1,189 +1,71 @@
-import { execSync } from 'child_process'
-import { readdirSync, statSync } from 'fs'
-import { join } from 'path'
+// Código de WILKER OFC
 
-let handler = async (m, { conn, text }) => {
-  // Reacción inicial
-  await m.react('🌀')
-  
+import { execSync} from 'child_process';
+
+const handler = async (m, { conn, args}) => {
   try {
-    // Mensaje de inicio épico
-    const loadingMsg = await conn.reply(m.chat, 
-`╔═══════════════════════════════╗
-║    🐉 *ACTUALIZACIÓN BEAST* ⚡   ║
-╠═══════════════════════════════╣
-║ 📦 *Estado:* Iniciando descarga
-║ 🌀 *Proceso:* Sincronizando repositorio
-║ ⚡ *Transformación:* En progreso...
-╚═══════════════════════════════╝`, m)
-    
-    // Contar archivos antes
-    const filesBefore = countFiles()
-    await m.react('📥')
-    
-    // Fase 1: Descargando
-    await conn.sendMessage(m.chat, { 
-      text: '🌀 *FASE 1: DESCARGANDO NUEVAS TÉCNICAS...*\n⚡ Conectando al dojo principal...',
-      edit: loadingMsg.key 
-    }, { quoted: m })
-    
-    // Ejecutar git pull
-    let stdout
+    await conn.reply(m.chat, '⏳ *_Actualizando el bot... Por favor espera._*', m);
+
+    const output = execSync('git pull' + (args.length? ' ' + args.join(' '): '')).toString();
+    const isUpdated = output.includes('Already up to date');
+
+    const updateMsg = isUpdated
+? '✅ *Gohan beast ya está actualizado.*'
+: `✅ *Actualización aplicada correctamente:*\n\n${output}`;
+
+    await conn.reply(m.chat, updateMsg, m);
+
+} catch (error) {
+    let conflictMsg = '❌ *Error al actualizar el bot.*';
+
     try {
-      stdout = execSync('git pull' + (m.fromMe && text ? ' ' + text : ''), { 
-        encoding: 'utf-8',
-        stdio: 'pipe'
-      })
-    } catch (gitError) {
-      await conn.sendMessage(m.chat, {
-        text: `❌ *ERROR EN LA DESCARGA* ⚡\n\n` +
-              `💥 El dojo está bloqueado:\n\`\`\`${gitError.stderr || gitError.message}\`\`\`\n` +
-              `🌀 *Solución:* Verifica permisos o conexión`,
-        edit: loadingMsg.key
-      })
-      await m.react('❌')
-      return
-    }
-    
-    await m.react('⚡')
-    
-    // Fase 2: Procesando
-    await conn.sendMessage(m.chat, {
-      text: '⚡ *FASE 2: PROCESANDO TÉCNICAS...*\n🐉 Descomprimiendo poder Saiyan...',
-      edit: loadingMsg.key
-    })
-    
-    // Contar archivos después
-    const filesAfter = countFiles()
-    const newFiles = filesAfter - filesBefore
-    
-    // Analizar output de git
-    const output = stdout.toString()
-    const isUpdated = output.includes('Already up to date') 
-      ? '✅ *YA ESTÁ ACTUALIZADO*' 
-      : '🔄 *ACTUALIZACIÓN COMPLETADA*'
-    
-    const changes = output.includes('files changed') 
-      ? output.match(/(\d+) files? changed/)?.[1] || '0'
-      : '0'
-    
-    await m.react('🔧')
-    
-    // Fase 3: Finalizando
-    await conn.sendMessage(m.chat, {
-      text: '💥 *FASE 3: ACTIVANDO BEAST MODE...*\n🌀 Aplicando transformaciones...',
-      edit: loadingMsg.key
-    })
-    
-    // Mensaje final épico
-    const resultMessage = 
-`╔═══════════════════════════════╗
-║    🎉 *ACTUALIZACIÓN COMPLETA*  ║
-╠═══════════════════════════════╣
-║ ${isUpdated}
-╠═══════════════════════════════╣
-║ 📊 *ESTADÍSTICAS:*
-║ • 📁 Archivos nuevos: ${newFiles}
-║ • 🔄 Cambios: ${changes} archivos
-║ • 🐉 Estado: Beast Mode activado
-║ • ⚡ Energía: 100% cargada
-╠═══════════════════════════════╣
-║ 🌀 *TRANSFORMACIONES APLICADAS:*
-║ ✅ Técnicas actualizadas
-║ ✅ Poder Saiyan renovado
-║ ✅ Dojo sincronizado
-║ ✅ Beast Mode: ACTIVADO
-╚═══════════════════════════════╝
+      const status = execSync('git status --porcelain').toString().trim();
 
-🔱 *Gohan Beast listo para la batalla!* 🐉⚡`
+      if (status) {
+        const conflictedFiles = status
+.split('\n')
+.map(line => line.slice(3))
+.filter(file =>
+!file.startsWith('.npm/') &&
+!file.startsWith('Sessions/Principal/') &&
+!file.startsWith('node_modules/') &&
+!file.startsWith('package-lock.json') &&
+!file.startsWith('database.json') &&
+!file.startsWith('.cache/') &&
+!file.startsWith('tmp/')
+);
 
-    await conn.sendMessage(m.chat, {
-      text: resultMessage,
-      edit: loadingMsg.key
-    })
-    
-    // Si hay cambios, mostrar detalles
-    if (newFiles > 0 || changes > 0) {
-      setTimeout(async () => {
-        const detailMsg = 
-`📋 *DETALLES DE LA ACTUALIZACIÓN:*
-
-\`\`\`
-${output.substring(0, 800)}${output.length > 800 ? '...' : ''}
-\`\`\`
-
-🌀 *Nuevas técnicas disponibles*
-⚡ *Reinicia el bot para cargar cambios*
-💪 *¡Gohan Beast más poderoso que nunca!`
-        
-        await conn.sendMessage(m.chat, { text: detailMsg })
-      }, 1500)
-    }
-    
-    await m.react('✅')
-    
-    // Mensaje extra si se necesitan más acciones
-    if (output.includes('npm install') || output.includes('package.json')) {
-      setTimeout(async () => {
-        await conn.sendMessage(m.chat, {
-          text: '⚠️ *ATENCIÓN SAIYAN:*\n' +
-                'Se detectaron cambios en dependencias.\n' +
-                'Ejecuta: `.npm install` para actualizar\n' +
-                'o reinicia completamente el bot.'
-        })
-      }, 2000)
-    }
-    
-  } catch (error) {
-    // Manejo de errores épico
-    await conn.sendMessage(m.chat, {
-      text: `💥 *FALLA EN LA TRANSFORMACIÓN* ⚡\n\n` +
-            `🐉 *Error crítico detectado:*\n` +
-            `\`\`\`${error.message}\`\`\`\n\n` +
-            `🌀 *Posibles causas:*\n` +
-            `• Conexión al dojo perdida\n` +
-            `• Conflicto de técnicas\n` +
-            `• Permisos insuficientes\n\n` +
-            `🔧 *Solución:*\n` +
-            `Verifica manualmente el repositorio`
-    })
-    await m.react('❌')
-  }
+        if (conflictedFiles.length> 0) {
+          conflictMsg = `⚠️ *Conflictos detectados en los siguientes archivos:*\n\n` +
+            conflictedFiles.map(f => `• ${f}`).join('\n') +
+            `\n\n🔧 *Solución recomendada:* reinstala el bot o resuelve los conflictos manualmente.`;
+}
+}
+} catch (statusError) {
+      console.error('Error al verificar conflictos:', statusError);
 }
 
-// Función para contar archivos
-function countFiles() {
-  let count = 0
-  function countInDir(dir) {
-    const items = readdirSync(dir)
-    items.forEach(item => {
-      const fullPath = join(dir, item)
-      const stat = statSync(fullPath)
-      if (stat.isDirectory()) {
-        countInDir(fullPath)
-      } else {
-        count++
-      }
-    })
-  }
-  
-  try {
-    countInDir('.')
-  } catch (e) {
-    console.error('Error contando archivos:', e)
-  }
-  return count
+    await conn.reply(m.chat, conflictMsg, m);
 }
+};
 
-// Información del comando
-handler.help = ['update', 'actualizar', 'upgrade', 'pull']
-handler.tags = ['owner', 'beast', 'sistema']
-handler.command = ['update', 'actualizar', 'upgrade', 'pull', 'fix', 'fixed', 'beastupdate']
-handler.rowner = true  // Solo dueño puede usar
-handler.limit = false
-handler.premium = false
+const keywords = ['update', 'up', 'fix'];
 
-// Aliases temáticos
-handler.alias = ['beastsync', 'gohanupdate', 'saipull']
+handler.help = ['update'];
+handler.tags = ['owner'];
+handler.command = ['update', 'up', 'fix'];
+handler.rowner = true;
 
-export default handler
+handler.all = async function (m) {
+  if (!m.text || typeof m.text!== 'string') return;
+
+  const input = m.text.trim().toLowerCase();
+
+  for (const keyword of keywords) {
+    if (input === keyword) {
+      return handler(m, { conn: this, args: []});
+}
+}
+};
+
+export default handler;
