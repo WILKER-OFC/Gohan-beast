@@ -1,3 +1,6 @@
+console.clear()
+console.log('🌀 Iniciando Gohan Beast Bot...')
+
 import fs from 'fs'
 import path, { join } from 'path';
 import { fileURLToPath, pathToFileURL } from 'url';
@@ -19,6 +22,38 @@ import NodeCache from 'node-cache';
 import qrcode from 'qrcode-terminal';
 import { spawn } from 'child_process';
 import { setInterval } from 'timers';
+
+// ============================================
+// 🌀 GO-HAN BEAST BOT - INICIALIZACIÓN
+// ============================================
+console.log(chalk.bold.hex('#FF3366')('╔══════════════════════════════════════════╗'))
+console.log(chalk.bold.hex('#FFCC00')('║           🔥 GOHAN BEAST BOT 🔥          ║'))
+console.log(chalk.bold.hex('#FF3366')('╚══════════════════════════════════════════╝'))
+console.log(chalk.hex('#00FFFF')(`📱 Iniciando a las: ${new Date().toLocaleTimeString()}`))
+console.log(chalk.hex('#FFCC00')(`⚡ Transformación Beast: 100% completada`))
+console.log(chalk.hex('#FF3366')(`💪 Poder: MAXIMUM | Modo: Beast Ultrainstinct`))
+console.log(chalk.hex('#00FFFF')('🔱 By Wilker | WhatsApp Multi-Device'))
+console.log('')
+
+// Animación de carga Beast
+const loadAnimation = () => {
+  const phases = [
+    '🟡 Cargando energía Saiyan...',
+    '🟠 Potencial oculto detectado...', 
+    '🔴 Transformación Beast iniciando...',
+    '🟣 Células Saiyan al límite...',
+    '🔵 ¡GOHAN BEAST ACTIVADO!'
+  ];
+  
+  phases.forEach((phase, i) => {
+    setTimeout(() => {
+      console.log(chalk.hex(i < 2 ? '#FFCC00' : i < 4 ? '#FF3366' : '#00FFFF')(phase))
+    }, i * 500)
+  })
+}
+
+loadAnimation()
+// ============================================
 
 process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = '1';
 process.env.TMPDIR = path.join(process.cwd(), 'tmp');
@@ -184,12 +219,12 @@ try {
  * @param {string} botPath - Ruta completa a la carpeta de sesión del sub-bot.
  */
 async function reconnectSubBot(botPath) {
-  console.log(chalk.yellow(`[DEBUG] Intentando reconectar sub-bot en: ${path.basename(botPath)}`));
+  console.log(chalk.hex('#FFCC00')(`[BEAST MODE] Intentando reconectar sub-bot en: ${path.basename(botPath)}`));
   try {
     const { state: subBotState, saveCreds: saveSubBotCreds } = await useMultiFileAuthState(botPath);
 
     if (!subBotState.creds.registered) {
-      console.warn(chalk.yellow(`[DEBUG] Advertencia: El sub-bot en ${path.basename(botPath)} no está registrado. Salto la conexión.`));
+      console.warn(chalk.hex('#FFCC00')(`[BEAST MODE] Advertencia: El sub-bot en ${path.basename(botPath)} no está registrado. Salto la conexión.`));
       return;
     }
 
@@ -218,27 +253,27 @@ async function reconnectSubBot(botPath) {
     subBotConn.ev.on('connection.update', (update) => {
       const { connection, lastDisconnect } = update;
       if (connection === 'open') {
-        console.log(chalk.green(`[DEBUG] Sub-bot conectado correctamente: ${path.basename(botPath)}`));
+        console.log(chalk.hex('#00FF00')(`✅ [BEAST MODE] Sub-bot conectado: ${path.basename(botPath)}`));
         const yaExiste = global.conns.some(c => c.user?.jid === subBotConn.user?.jid);
         if (!yaExiste) {
           global.conns.push(subBotConn);
-          console.log(chalk.green(`🌀 [DEBUG] Sub-bot agregado a global.conns: ${subBotConn.user?.jid}`));
+          console.log(chalk.hex('#00FF00')(`🟢 [BEAST MODE] Sub-bot agregado: ${subBotConn.user?.jid}`));
         }
       } else if (connection === 'close') {
         const reason = new Boom(lastDisconnect?.error)?.output?.statusCode;
-        console.error(chalk.red(`[DEBUG] Sub-bot desconectado en ${path.basename(botPath)}. Razón: ${reason}`));
+        console.error(chalk.hex('#FF3366')(`❌ [BEAST MODE] Sub-bot desconectado ${path.basename(botPath)}. Razón: ${reason}`));
 
         // --- INICIO DE CAMBIO IMPORTANTE: Manejo de desconexión permanente ---
         if (reason === DisconnectReason.loggedOut || reason === 401) {
-          console.log(chalk.red(`❌ [DEBUG] Desconexión permanente detectada. Eliminando sesión del sub-bot en ${path.basename(botPath)}.`));
+          console.log(chalk.hex('#FF0000')(`💀 [BEAST MODE] Eliminando sesión del sub-bot en ${path.basename(botPath)}.`));
           // Eliminar de global.conns
           global.conns = global.conns.filter(conn => conn.user?.jid !== subBotConn.user?.jid);
           // Eliminar carpeta de sesión del filesystem
           try {
             rmSync(botPath, { recursive: true, force: true });
-            console.log(chalk.red(`✅ [DEBUG] Carpeta de sesión eliminada correctamente: ${botPath}`));
+            console.log(chalk.hex('#FF3366')(`🗑️ [BEAST MODE] Sesión eliminada: ${botPath}`));
           } catch (e) {
-            console.error(chalk.red(`❌ [ERROR] No se pudo eliminar la carpeta de sesión ${botPath}: ${e}`));
+            console.error(chalk.hex('#FF0000')(`❌ [ERROR] No se pudo eliminar la carpeta de sesión ${botPath}: ${e}`));
           }
         }
         // --- FIN DE CAMBIO IMPORTANTE ---
@@ -248,16 +283,16 @@ async function reconnectSubBot(botPath) {
 
     subBotConn.handler = handler.bind(subBotConn);
     subBotConn.ev.on('messages.upsert', subBotConn.handler);
-    console.log(chalk.blue(`[DEBUG] Manejador asignado correctamente al sub-bot: ${path.basename(botPath)}`));
+    console.log(chalk.hex('#00FFFF')(`🌀 [BEAST MODE] Manejador asignado: ${path.basename(botPath)}`));
 
     if (!global.subBots) {
       global.subBots = {};
     }
     global.subBots[path.basename(botPath)] = subBotConn;
-    console.log(chalk.yellow(`[DEBUG] Paso 5: Sub-bot ${path.basename(botPath)} procesado y almacenado.`));
+    console.log(chalk.hex('#FFCC00')(`⚡ [BEAST MODE] Sub-bot ${path.basename(botPath)} procesado`));
 
   } catch (e) {
-    console.error(chalk.red(`[DEBUG] Error fatal al intentar reconectar sub-bot en ${path.basename(botPath)}:`), e);
+    console.error(chalk.hex('#FF0000')(`💥 [BEAST MODE] Error fatal en ${path.basename(botPath)}:`), e);
   }
 }
 
@@ -269,32 +304,32 @@ async function startSubBots() {
 
   if (!existsSync(rutaJadiBot)) {
     mkdirSync(rutaJadiBot, { recursive: true });
-    console.log(chalk.bold.cyan(`La carpeta: ${rutaJadiBot} se creó correctamente.`));
+    console.log(chalk.hex('#00FFFF')(`📁 Carpeta creada: ${rutaJadiBot}`));
   } else {
-    console.log(chalk.bold.cyan(`La carpeta: ${rutaJadiBot} ya está creada.`));
+    console.log(chalk.hex('#00FFFF')(`📁 Carpeta ya existe: ${rutaJadiBot}`));
   }
 
   const readRutaJadiBot = readdirSync(rutaJadiBot);
   if (readRutaJadiBot.length > 0) {
     const credsFile = 'creds.json';
-    console.log(chalk.magenta(`[DEBUG] Iniciando proceso de reconexión de sub-bots. Total de directorios encontrados: ${readRutaJadiBot.length}`));
+    console.log(chalk.hex('#FF3366')(`🌀 [BEAST MODE] Iniciando sub-bots: ${readRutaJadiBot.length} encontrados`));
     for (const subBotDir of readRutaJadiBot) {
       const botPath = join(rutaJadiBot, subBotDir);
       if (statSync(botPath).isDirectory()) {
         const readBotPath = readdirSync(botPath);
         if (readBotPath.includes(credsFile)) {
-          console.log(chalk.magenta(`[DEBUG] Se encontró 'creds.json' en ${subBotDir}. Intentando reconectar...`));
+          console.log(chalk.hex('#FFCC00')(`📱 [BEAST MODE] Conectando: ${subBotDir}`));
           await reconnectSubBot(botPath);
         } else {
-          console.log(chalk.yellow(`[DEBUG] No se encontró 'creds.json' en ${subBotDir}. Este sub-bot puede no estar registrado o la sesión es inválida.`));
+          console.log(chalk.hex('#FF9900')(`⚠️ [BEAST MODE] Sin creds.json: ${subBotDir}`));
         }
       } else {
-        console.log(chalk.gray(`[DEBUG] '${subBotDir}' en JadiBots no es un directorio, saltando.`));
+        console.log(chalk.hex('#999999')(`📄 [BEAST MODE] No es directorio: ${subBotDir}`));
       }
     }
-    console.log(chalk.magenta(`[DEBUG] Proceso de reconexión de sub-bots finalizado.`));
+    console.log(chalk.hex('#00FF00')(`✅ [BEAST MODE] Sub-bots conectados`));
   } else {
-    console.log(chalk.gray(`[DEBUG] No se encontraron carpetas de sub-bots en ${rutaJadiBot}.`));
+    console.log(chalk.hex('#999999')(`📭 [BEAST MODE] No hay sub-bots en ${rutaJadiBot}`));
   }
 }
 
@@ -302,22 +337,28 @@ await startSubBots();
 
 async function handleLogin() {
   if (conn.authState.creds.registered) {
-    console.log(chalk.green('Sesión principal ya registrada.'));
+    console.log(chalk.hex('#00FF00')('✅ Sesión Beast ya registrada.'));
+    console.log(chalk.hex('#FFCC00')('⚡ Gohan Beast listo para la batalla!'));
     return;
   }
 
   let loginMethod = await question(
-    chalk.green(
-      `🌀 Holas \n` +
-      `🌀 Escribe "code" para iniciar..\n` +
-      `> `
+    chalk.hex('#FF3366')(
+      `╔═══════════════════════════════╗\n` +
+      `║    🔥 GOHAN BEAST BOT 🔥     ║\n` +
+      `╠═══════════════════════════════╣\n` +
+      `║ 💎 Transformación disponible  ║\n` +
+      `║ 📱 Escribe "code" para iniciar║\n` +
+      `║ 🌀 Beast Mode activation      ║\n` +
+      `╚═══════════════════════════════╝\n` +
+      `\n> `
     )
   );
 
   loginMethod = loginMethod.toLowerCase().trim();
 
   if (loginMethod === 'code') {
-    let phoneNumber = await question(chalk.red('🔥 Ingresa el número de WhatsApp donde estará el bot (incluye código país, ej: 549XXXXXXXXXX):\n'));
+    let phoneNumber = await question(chalk.hex('#FF0000')('🔥 Ingresa el número de WhatsApp donde estará el bot (incluye código país, ej: 521XXXXXXXXXX):\n'));
     phoneNumber = phoneNumber.replace(/\D/g, '');
 
     if (phoneNumber.startsWith('52') && phoneNumber.length === 12) {
@@ -333,20 +374,30 @@ async function handleLogin() {
         if (conn.ws.readyState === ws.OPEN) {
           let code = await conn.requestPairingCode(phoneNumber);
           code = code?.match(/.{1,4}/g)?.join('-') || code;
-          console.log(chalk.cyan('Tu código de emparejamiento es:', code));
+          console.log(chalk.hex('#00FFFF')('╔══════════════════════════════════════════╗'));
+          console.log(chalk.hex('#FFCC00')('║        🔥 CÓDIGO BEAST ACTIVADO 🔥       ║'));
+          console.log(chalk.hex('#00FFFF')('╠══════════════════════════════════════════╣'));
+          console.log(chalk.bold.hex('#FFFFFF')(`║           📱 ${code}           ║`));
+          console.log(chalk.hex('#00FFFF')('╚══════════════════════════════════════════╝'));
+          console.log(chalk.hex('#FFCC00')('⚠️ Ingresa este código en WhatsApp > Dispositivos vinculados'));
         } else {
-          console.log(chalk.red('La conexión principal no está abierta. Intenta nuevamente.'));
+          console.log(chalk.hex('#FF0000')('❌ Conexión principal no abierta. Intenta nuevamente.'));
         }
       } catch (e) {
-        console.log(chalk.red('Error al solicitar código de emparejamiento:'), e.message || e);
+        console.log(chalk.hex('#FF0000')('💥 Error al solicitar código de emparejamiento:'), e.message || e);
       }
     } else {
-      console.log(chalk.red('Tu versión de Baileys no soporta emparejamiento por código.'));
+      console.log(chalk.hex('#FF0000')('❌ Tu versión de Baileys no soporta emparejamiento por código.'));
     }
   } else {
-    console.log(chalk.yellow('Generando código QR, escanéalo con tu WhatsApp...'));
+    console.log(chalk.hex('#FFCC00')('🌀 Generando código QR Beast, escanéalo...'));
     conn.ev.on('connection.update', ({ qr }) => {
-      if (qr) qrcode.generate(qr, { small: true });
+      if (qr) {
+        console.log(chalk.hex('#00FFFF')('╔══════════════════════════════════════════╗'));
+        console.log(chalk.hex('#FF3366')('║         🔥 QR BEAST GENERADO 🔥         ║'));
+        console.log(chalk.hex('#00FFFF')('╚══════════════════════════════════════════╝'));
+        qrcode.generate(qr, { small: true });
+      }
     });
   }
 }
@@ -371,7 +422,7 @@ if (!opts['test']) {
           spawn('find', [filename, '-amin', '3', '-type', 'f', '-delete']);
         });
       }
-    }, 30 * 1000); // Se mantiene el intervalo de 30 segundos, pero ahora es más eficiente.
+    }, 30 * 1000);
     // --- FIN DE CAMBIO PARA OPTIMIZACIÓN DE BASE DE DATOS ---
   }
 }
@@ -382,7 +433,7 @@ function clearTmp() {
   tmp.forEach((dirname) => readdirSync(dirname).forEach((file) => filename.push(join(dirname, file))));
   return filename.map((file) => {
     const stats = statSync(file);
-    if (stats.isFile() && Date.now() - stats.mtimeMs >= 1000 * 60 * 1) return unlinkSync(file); // Más agresivo, elimina archivos de 1 minuto
+    if (stats.isFile() && Date.now() - stats.mtimeMs >= 1000 * 60 * 1) return unlinkSync(file);
     return false;
   });
 }
@@ -392,18 +443,17 @@ function clearTmp() {
 setInterval(() => {
   if (global.stopped === 'close' || !conn || !conn.user) return;
   clearTmp();
-}, 180000); // 180000 ms = 3 minutos
+}, 180000);
 // --- FIN DE CAMBIO PARA OPTIMIZACIÓN DE TEMPORALES ---
 
 // --- INICIO DE CAMBIO: Optimización de memoria ---
-// Ejecutar el recolector de basura de Node.js a intervalos más frecuentes.
 if (typeof global.gc === 'function') {
   setInterval(() => {
-    console.log(chalk.gray(`[DEBUG] Ejecutando recolección de basura...`));
+    console.log(chalk.hex('#999999')(`🌀 [BEAST MODE] Ejecutando recolección de basura...`));
     global.gc();
-  }, 180000); // Cada 3 minutos (180000 ms), más frecuente para baja memoria.
+  }, 180000);
 } else {
-  console.log(chalk.yellow(`[WARN] La recolección de basura no está disponible. Para habilitarla, ejecuta Node.js con la bandera --expose-gc.`));
+  console.log(chalk.hex('#FFCC00')(`⚠️ [BEAST MODE] Recolección de basura no disponible. Ejecuta con --expose-gc`));
 }
 // --- FIN DE CAMBIO ---
 
@@ -420,14 +470,18 @@ async function connectionUpdate(update) {
   }
   if (global.db.data == null) await loadDatabase();
   if (connection === 'open') {
-    console.log(chalk.yellow('Conectado correctamente el bot principal.'));
+    console.log(chalk.hex('#00FF00')('╔══════════════════════════════════════════╗'));
+    console.log(chalk.hex('#FFCC00')('║      ✅ GOHAN BEAST CONECTADO ✅        ║'));
+    console.log(chalk.hex('#00FF00')('╚══════════════════════════════════════════╝'));
+    console.log(chalk.hex('#00FFFF')(`📱 Listo para recibir comandos Beast!`));
+    console.log(chalk.hex('#FFCC00')(`⚡ ¡Transformación completada con éxito!`));
   }
   const reason = new Boom(lastDisconnect?.error)?.output?.statusCode;
   if (reason === 405) {
     if (existsSync('./sessions/creds.json')) unlinkSync('./sessions/creds.json');
     console.log(
-      chalk.bold.redBright(
-        `Conexión reemplazada para el bot principal, por favor espera un momento. Reiniciando...\nSi aparecen errores, vuelve a iniciar con: npm start`
+      chalk.bold.hex('#FF0000')(
+        `💥 Conexión reemplazada para el bot Beast, reiniciando...\n🔄 Si hay errores, vuelve a iniciar: npm start`
       )
     );
     process.send('reset');
@@ -435,28 +489,26 @@ async function connectionUpdate(update) {
   if (connection === 'close') {
     switch (reason) {
       case DisconnectReason.badSession:
-        conn.logger.error(`Sesión principal incorrecta, elimina la carpeta ${global.authFile} y escanea nuevamente.`);
+        conn.logger.error(chalk.hex('#FF0000')(`❌ Sesión Beast incorrecta, elimina la carpeta ${global.authFile} y escanea nuevamente.`));
         break;
       case DisconnectReason.connectionClosed:
       case DisconnectReason.connectionLost:
       case DisconnectReason.timedOut:
-        conn.logger.warn(`Conexión principal perdida o cerrada, reconectando...`);
+        conn.logger.warn(chalk.hex('#FF9900')(`⚠️ Conexión Beast perdida, reconectando...`));
         await global.reloadHandler(true).catch(console.error);
         break;
       case DisconnectReason.connectionReplaced:
-        conn.logger.error(
-          `Conexión principal reemplazada, se abrió otra sesión. Cierra esta sesión primero.`
-        );
+        conn.logger.error(chalk.hex('#FF0000')(`💥 Conexión Beast reemplazada, cierra la otra sesión primero.`));
         break;
       case DisconnectReason.loggedOut:
-        conn.logger.error(`Sesión principal cerrada, elimina la carpeta ${global.authFile} y escanea nuevamente.`);
+        conn.logger.error(chalk.hex('#FF0000')(`💀 Sesión Beast cerrada, elimina ${global.authFile} y escanea nuevamente.`));
         break;
       case DisconnectReason.restartRequired:
-        conn.logger.info(`Reinicio necesario del bot principal, reinicia el servidor si hay problemas.`);
+        conn.logger.info(chalk.hex('#FFCC00')(`🔄 Reinicio necesario del bot Beast, reiniciando...`));
         await global.reloadHandler(true).catch(console.error);
         break;
       default:
-        conn.logger.warn(`Desconexión desconocida del bot principal: ${reason || ''} - Estado: ${connection || ''}`);
+        conn.logger.warn(chalk.hex('#FF9900')(`⚠️ Desconexión desconocida Beast: ${reason || ''}`));
         await global.reloadHandler(true).catch(console.error);
         break;
     }
@@ -472,7 +524,7 @@ global.reloadHandler = async function (restartConn) {
     const Handler = await import(`./handler.js?update=${Date.now()}`).catch(console.error);
     if (Handler && Handler.handler) handler = Handler.handler;
   } catch (e) {
-    console.error(`[ERROR] Fallo al cargar handler.js: ${e}`);
+    console.error(chalk.hex('#FF0000')(`💥 [ERROR] Fallo al cargar handler.js: ${e}`));
   }
 
   if (restartConn) {
@@ -513,7 +565,7 @@ async function filesInit() {
       const module = await import(file);
       global.plugins[filename] = module.default || module;
     } catch (e) {
-      conn.logger.error(`Error al cargar el plugin '${filename}': ${e}`);
+      conn.logger.error(chalk.hex('#FF0000')(`💥 Error al cargar el plugin '${filename}': ${e}`));
       delete global.plugins[filename];
     }
   }
@@ -524,24 +576,24 @@ global.reload = async (_ev, filename) => {
   if (pluginFilter(filename)) {
     const dir = global.__filename(join(pluginFolder, filename), true);
     if (filename in global.plugins) {
-      if (existsSync(dir)) conn.logger.info(`Updated plugin - '${filename}'`);
+      if (existsSync(dir)) conn.logger.info(chalk.hex('#00FFFF')(`🌀 Plugin actualizado - '${filename}'`));
       else {
-        conn.logger.warn(`Deleted plugin - '${filename}'`);
+        conn.logger.warn(chalk.hex('#FF9900')(`⚠️ Plugin eliminado - '${filename}'`));
         return delete global.plugins[filename];
       }
-    } else conn.logger.info(`New plugin - '${filename}'`);
+    } else conn.logger.info(chalk.hex('#00FF00')(`✅ Nuevo plugin - '${filename}'`));
 
     const err = syntaxerror(readFileSync(dir), filename, {
       sourceType: 'module',
       allowAwaitOutsideFunction: true,
     });
-    if (err) conn.logger.error(`Syntax error while loading '${filename}':\n${format(err)}`);
+    if (err) conn.logger.error(chalk.hex('#FF0000')(`💥 Error de sintaxis en '${filename}':\n${format(err)}`));
     else {
       try {
         const module = await import(`${global.__filename(dir)}?update=${Date.now()}`);
         global.plugins[filename] = module.default || module;
       } catch (e) {
-        conn.logger.error(`Error requiring plugin '${filename}':\n${format(e)}`);
+        conn.logger.error(chalk.hex('#FF0000')(`💥 Error cargando plugin '${filename}':\n${format(e)}`));
       } finally {
         global.plugins = Object.fromEntries(Object.entries(global.plugins).sort(([a], [b]) => a.localeCompare(b)));
       }
@@ -552,3 +604,9 @@ Object.freeze(global.reload);
 
 watch(pluginFolder, global.reload);
 await global.reloadHandler();
+
+console.log(chalk.hex('#FFCC00')('\n╔══════════════════════════════════════════╗'));
+console.log(chalk.hex('#FF3366')('║     🌀 GOHAN BEAST BOT INICIADO 🌀      ║'));
+console.log(chalk.hex('#FFCC00')('╚══════════════════════════════════════════╝'));
+console.log(chalk.hex('#00FFFF')('💎 By Wilker | Transformación Beast completada'));
+console.log(chalk.hex('#FF3366')('🔥 ¡Listo para dominar WhatsApp!'));
