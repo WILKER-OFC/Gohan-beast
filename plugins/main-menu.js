@@ -229,7 +229,7 @@ El menú Saiyan falló en cargarse.
 handler.command = ['menu', 'help', 'menú', 'ayuda', 'comandos', 'beastmenu', 'gohan']
 handler.tags = ['beast', 'main', 'menu']
 handler.help = ['menu', 'Muestra el menú principal de Gohan Beast']
-handler.register = true
+handler.register = false
 handler.limit = false
 
 export default handler
