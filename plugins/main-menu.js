@@ -53,7 +53,7 @@ const handler = async (m, { conn, usedPrefix: _p }) => {
     const date = d.toLocaleDateString('es', { day: 'numeric', month: 'long', year: 'numeric' })
 
     const help = Object.values(global.plugins)
-      .filter(p => !p.disabled)
+      .filter(p => p && !p.disabled)
       .map(p => ({
         help: Array.isArray(p.help) ? p.help : [p.help],
         tags: Array.isArray(p.tags) ? p.tags : [p.tags],
@@ -64,7 +64,7 @@ const handler = async (m, { conn, usedPrefix: _p }) => {
 
     // Configuración fija para Gohan Beast Bot
     let nombreBot = 'Gohan Beast Bot'
-    let bannerFinal = 'https://d.uguu.se/FLmbfoqM.jpeg'
+    let bannerFinal = 'https://d.uguu.se/FLmbfoqM.jpeg' // URL CORREGIDA
 
     const tipo = conn.user.jid === global.conn.user.jid ? '🆅 Principal' : '🅱 SubBot'
     const menuConfig = conn.menu || defaultMenu
@@ -77,8 +77,8 @@ const handler = async (m, { conn, usedPrefix: _p }) => {
           .map(menu => menu.help.map(h => 
             menuConfig.body
               .replace(/%cmd/g, menu.prefix ? h : `${_p}${h}`)
-              .replace(/%islimit/g, menu.limit ? ' 🔸[LIMIT]' : '')
-              .replace(/%isPremium/g, menu.premium ? ' 💎[PREMIUM]' : '')
+              .replace(/%islimit/g, menu.limit ? ' 🔸' : '')
+              .replace(/%isPremium/g, menu.premium ? ' 💎' : '')
           ).join('\n')).join('\n')
         
         if (cmds.trim()) {
@@ -117,31 +117,56 @@ const handler = async (m, { conn, usedPrefix: _p }) => {
       (_, name) => String(replace[name])
     )
 
-    const isURL = /^https?:\/\//i.test(bannerFinal)
-    const imageContent = isURL ? { image: { url: bannerFinal } } : { image: fs.readFileSync(bannerFinal) }
-
-    // Botones mejorados
+    // Botones como los pediste
     const buttons = [
       { buttonId: '.code', buttonText: { displayText: '🐦‍🔥 Crear SubBot' }, type: 1 },
       { buttonId: '.owner', buttonText: { displayText: '👑 Propietario' }, type: 1 },
       { buttonId: '.donar', buttonText: { displayText: '💸 Donar' }, type: 1 }
     ]
 
+    // Enviar mensaje con imagen y botones
     await conn.sendMessage(
       m.chat,
       { 
-        ...imageContent, 
+        image: { url: bannerFinal },
         caption: text.trim(), 
         footer: '⚡ Gohan Beast Bot - Todos los derechos reservados ⚡', 
         buttons, 
-        headerType: 4, 
-        mentionedJid: conn.parseMention(text) 
+        headerType: 4
       },
       { quoted: m }
     )
+    
   } catch (e) {
     console.error('❌ Error en el menú:', e)
-    conn.reply(m.chat, '❎ Lo sentimos, el menú tiene un error.', m)
+    // Si hay error con la imagen, enviar solo texto
+    await conn.reply(m.chat, `❌ Error: ${e.message}\n\nUsando menú de texto...`, m)
+    
+    // Enviar menú simple de texto como fallback
+    const simpleMenu = `
+⚡ *GOHAN BEAST BOT* ⚡
+
+👋 Hola! Soy Gohan Beast Bot
+
+📌 *Comandos disponibles:*
+• .owner - Información del creador
+• .donar - Donaciones y soporte
+• .code - Sistema de subbots
+• .menu - Ver menú completo
+
+👑 Owner: +5492644893953
+📧 Email: developer.wilker.ofc@gmail.com
+
+⚡ _Bot en funcionamiento_`
+    
+    await conn.sendMessage(m.chat, {
+      text: simpleMenu,
+      buttons: [
+        { buttonId: '.code', buttonText: { displayText: '🐦‍🔥 SubBot' }, type: 1 },
+        { buttonId: '.owner', buttonText: { displayText: '👑 Owner' }, type: 1 },
+        { buttonId: '.donar', buttonText: { displayText: '💸 Donar' }, type: 1 }
+      ]
+    }, { quoted: m })
   }
 }
 
