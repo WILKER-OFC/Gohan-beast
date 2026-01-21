@@ -1,81 +1,164 @@
-import { prepareWAMessageMedia, generateWAMessageFromContent, getDevice } from '@whiskeysockets/baileys';
-import yts from 'yt-search';
-import fs from 'fs';
+import yts from "yt-search"
+import fetch from "node-fetch"
 
-const handler = async (m, { conn, text, usedPrefix: prefijo }) => {
-    const device = await getDevice(m.key.id);
+const handler = async (m, { conn, text, usedPrefix, command }) => {
+  if (!text) return m.reply(" `Ingresa el nombre del video de YouTube`.")
 
-    if (!text) return conn.reply(m.chat, 'Iᴍɢʀᴇsᴀ Eʟ ᴍᴏᴍʙʀᴇ ᴅᴀ ᴍᴜsɪᴄᴀ Qᴜᴇ ǫᴜɪᴇʀᴇs Bᴜsᴄᴀʀ 🎋', m)
+  await m.react("🕘")
 
-    if (device !== 'desktop' && device !== 'web') {
-        const results = await yts(text);
-        const videos = results.videos.slice(0, 20);
-        const randomIndex = Math.floor(Math.random() * videos.length);
-        const randomVideo = videos[randomIndex];
+  try {
+    let url = text
+    let title = "Desconocido"
+    let authorName = "Desconocido"
+    let durationTimestamp = "Desconocida"
+    let views = "Desconocidas"
+    let thumbnail = ""
 
-        const messa = await prepareWAMessageMedia({ image: { url: randomVideo.thumbnail }}, { upload: conn.waUploadToServer });
-        const interactiveMessage = {
-            body: {
-                text: `ＹＯＵＴＵＢＥ － ＰＬＡＹ\n\n» *Título:* ${randomVideo.title}\n» *Duración:* ${randomVideo.duration.timestamp}\n» *Autor:* ${randomVideo.author.name || 'Desconocido'}\n» *Publicado:* ${randomVideo.ago}\n» *Enlace:* ${randomVideo.url}\n`
-            },
-            footer: { text: `${global.dev}`.trim() },
-            header: {
-                title: ``,
-                hasMediaAttachment: true,
-                imageMessage: messa.imageMessage,
-            },
-            nativeFlowMessage: {
-                buttons: [
-                    {
-                        name: 'single_select',
-                        buttonParamsJson: JSON.stringify({
-                            title: 'OPCIONES DE DESCARGA',
-                            sections: videos.map((video) => ({
-                                title: video.title,
-                                rows: [
-                                    { header: video.title, title: video.author.name, description: 'Descargar MP3 (Audio)', id: `${prefijo}ytmp3 ${video.url}` },
-                                    { header: video.title, title: video.author.name, description: 'Descargar MP4 (Video)', id: `${prefijo}ytmp4 ${video.url}` },
-                                    { header: video.title, title: video.author.name, description: 'Descargar MP3 como Documento', id: `${prefijo}ytmp3doc ${video.url}` },
-                                    { header: video.title, title: video.author.name, description: 'Descargar MP4 como Documento', id: `${prefijo}ytmp4doc ${video.url}` }
-                                ]
-                            }))
-                        })
-                    }
-                ],
-                messageParamsJson: ''
-            }
-        };
-
-        let msg = generateWAMessageFromContent(m.chat, {
-            viewOnceMessage: {
-                message: {
-                    interactiveMessage,
-                },
-            },
-        }, { userJid: conn.user.jid, quoted: null });
-        conn.relayMessage(m.chat, msg.message, { messageId: msg.key.id });
-
-    } else {
-        const idioma = global.db.data.users[m.sender].language;
-        const _translate = JSON.parse(fs.readFileSync(`./language/${idioma}.json`));
-        const traductor = _translate.plugins.buscador_yts;
-        const results = await yts(text);
-        const tes = results.all;
-        const teks = results.all.map((v) => {
-            if (v.type === 'video') return `
-° *_${v.title}_*
-↳ 🫐 *_Enlace :_* ${v.url}
-↳ 🕒 *_Duración :_* ${v.timestamp}
-↳ 📥 *_Subido :_* ${v.ago}
-↳ 👁 *_Vistas :_* ${v.views}`;
-        }).filter(v => v).join('\n\n◦◦◦◦◦◦◦◦◦◦◦◦◦◦◦◦◦◦◦◦◦◦◦◦◦◦◦◦◦◦\n\n');
-        conn.sendFile(m.chat, tes[0].thumbnail, 'error.jpg', teks.trim(), m);
+    if (!text.startsWith("https://")) {
+      const res = await yts(text)
+      if (!res?.videos?.length) return m.reply("🚫 No encontré nada.")
+      const video = res.videos[0]
+      title = video.title
+      authorName = video.author?.name
+      durationTimestamp = video.timestamp
+      views = video.views
+      url = video.url
+      thumbnail = video.thumbnail
     }
-};
 
-handler.help = ['play *<texto>*'];
-handler.tags = ['dl'];
-handler.command = ['play'];
-handler.register = false;
+    const vistas = formatViews(views)
 
-export default handler;
+    const res3 = await fetch("https://files.catbox.moe/wfd0ze.jpg")
+    const thumb3 = Buffer.from(await res3.arrayBuffer())
+
+    const fkontak = {
+      key: { fromMe: false, participant: "0@s.whatsapp.net" },
+      message: {
+        documentMessage: {
+          title: `『 ${title} 』`,
+          fileName: global.botname || "Shadow Bot",
+          jpegThumbnail: thumb3
+        }
+      }
+    }
+
+    const caption = `
+✧━───『 𝙸𝚗𝚏𝚘 𝚍𝚎𝚕 𝚅𝚒𝚍𝚎𝚘 』───━✧
+
+🎼 𝑻𝒊́𝒕𝒖𝒍𝒐: ${title}
+📺 𝑪𝒂𝒏𝒂𝒍: ${authorName}
+👁️ 𝑽𝒊𝒔𝒕𝒂𝒔: ${vistas}
+⏳ 𝑫𝒖𝒓𝒂𝒄𝒊𝒐́𝒏: ${durationTimestamp}
+🌐 𝑬𝒏𝒍𝒂𝒄𝒆: ${url}
+
+✧━───『 *GOHAN BEAS BOT* 』───━✧
+⚡ 𝑷𝒐𝒘𝒆𝒓𝒆𝒅 𝒃𝒚 WILKER OFC ⚡
+`
+
+    const thumb = (await conn.getFile(thumbnail)).data
+    await conn.sendMessage(
+      m.chat,
+      {
+        image: thumb,
+        caption,
+        footer: "⚡ Gohan — Descargas rápidas ⚡",
+        buttons: [
+          { buttonId: `shadowaudio ${url}`, buttonText: { displayText: "🎵 𝘿𝙚𝙨𝙘𝙖𝙧𝙜𝙖𝙧 𝘼𝙪𝙙𝙞𝙤" }, type: 1 },
+          { buttonId: `shadowvideo ${url}`, buttonText: { displayText: "🎬 𝘿𝙚𝙨𝙘𝙖𝙧𝙜𝙖𝙧 𝙑𝙞𝙙𝙚𝙤" }, type: 1 }
+        ],
+        headerType: 4
+      },
+      { quoted: fkontak }
+    )
+
+    await m.react("✅")
+  } catch (e) {
+    m.reply("❌ Error: " + e.message)
+    m.react("⚠️")
+  }
+}
+
+handler.before = async (m, { conn }) => {
+  const selected = m?.message?.buttonsResponseMessage?.selectedButtonId
+  if (!selected) return
+
+  const parts = selected.split(" ")
+  const cmd = parts.shift()
+  const url = parts.join(" ")
+
+  if (cmd === "shadowaudio") {
+    return downloadMedia(conn, m, url, "mp3")
+  }
+
+  if (cmd === "shadowvideo") {
+    return downloadMedia(conn, m, url, "mp4")
+  }
+}
+
+const fetchBuffer = async (url) => {
+  const response = await fetch(url)
+  return await response.buffer()
+}
+
+const downloadMedia = async (conn, m, url, type) => {
+  try {
+    const msg = type === "mp3"
+      ? "🎵 Descargando audio..."
+      : "🎬 Descargando video..."
+
+    const sent = await conn.sendMessage(m.chat, { text: msg }, { quoted: m })
+
+    const apiUrl = type === "mp3"
+      ? `https://api-adonix.ultraplus.click/download/ytaudio?url=${encodeURIComponent(url)}&apikey=SHADOWKEYBOTMD`
+      : `https://api-adonix.ultraplus.click/download/ytvideo?url=${encodeURIComponent(url)}&apikey=SHADOWKEYBOTMD`
+
+    const r = await fetch(apiUrl)
+    const data = await r.json()
+
+    if (!data?.status || !data?.data?.url) return m.reply("🚫 No se pudo descargar el archivo.")
+
+    const fileUrl = data.data.url
+    const fileTitle = cleanName(data.data.title || "video")
+
+    if (type === "mp3") {
+      const audioBuffer = await fetchBuffer(fileUrl)
+      await conn.sendMessage(
+        m.chat,
+        { audio: audioBuffer, mimetype: "audio/mpeg", fileName: fileTitle + ".mp3" },
+        { quoted: m }
+      )
+    } else {
+      await conn.sendMessage(
+        m.chat,
+        { video: { url: fileUrl }, mimetype: "video/mp4", fileName: fileTitle + ".mp4" },
+        { quoted: m }
+      )
+    }
+
+    await conn.sendMessage(
+      m.chat,
+      { text: `✅ Descarga completada\n\n🎼 Título: ${fileTitle}`, edit: sent.key }
+    )
+
+    await m.react("✅")
+  } catch (e) {
+    console.error(e)
+    m.reply("❌ Error: " + e.message)
+    m.react("💀")
+  }
+}
+
+const cleanName = (name) => name.replace(/[^\w\s-_.]/gi, "").substring(0, 50)
+const formatViews = (views) => {
+  if (views === undefined || views === null) return "No disponible"
+  if (views >= 1000000000) return `${(views / 1000000000).toFixed(1)}B`
+  if (views >= 1000000) return `${(views / 1000000).toFixed(1)}M`
+  if (views >= 1000) return `${(views / 1000).toFixed(1)}K`
+  return views.toString()
+}
+
+handler.command = ["play", "yt", "ytsearch"]
+handler.tags = ["downloader"]
+handler.register = true
+
+export default handler
