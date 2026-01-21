@@ -22,20 +22,25 @@ const tags = {
 
 const defaultMenu = {
   before: `
-🌤 Hola, soy %botname *( %tipo )*
-*%name*, %greeting
+⚡ *GOHAN BEAST BOT* ⚡
+*( %tipo )*
 
-🪪 *CANAL :* https://whatsapp.com/channel/0029Vb724SDHltY4qGU9QS3S
+👋 *Hola, %name!*
+${'%greeting'}
 
-> 🔵 Fecha = *%date*
-> 🍿 Actividad = *%uptime*
+📌 *Mi nombre:* Gohan Beast Bot
+📅 *Fecha:* %date
+⏱️ *Actividad:* %uptime
+📊 *Nivel:* %level
+🎯 *Exp:* %exp/%maxexp
+
 %readmore
 `.trimStart(),
 
-  header: '\n\`%category 👾\`',
-  body: '\`🖥️\` *%cmd* %islimit %isPremium',
-  footer: '',
-  after: '\n🚀 Creado por WILKER OFC.',
+  header: '\n╭───「 *%category* 」',
+  body: '│ ✦ %cmd %islimit %isPremium',
+  footer: '╰─────────────',
+  after: '\n\n*⚡ Creado por WILKER OFC. ⚡*',
 }
 
 const handler = async (m, { conn, usedPrefix: _p }) => {
@@ -57,20 +62,11 @@ const handler = async (m, { conn, usedPrefix: _p }) => {
         premium: p.premium,
       }))
 
-    let nombreBot = global.namebot || 'Bot'
-    let bannerFinal = './storage/img/menu.jpg'
+    // Configuración fija para Gohan Beast Bot
+    let nombreBot = 'Gohan Beast Bot'
+    let bannerFinal = 'https://d.uguu.se/FLmbfoqM.jpeg'
 
-    const botActual = conn.user?.jid?.split('@')[0].replace(/\D/g, '')
-    const configPath = join('./JadiBots', botActual, 'config.json')
-    if (fs.existsSync(configPath)) {
-      try {
-        const config = JSON.parse(fs.readFileSync(configPath))
-        if (config.name) nombreBot = config.name
-        if (config.banner) bannerFinal = config.banner
-      } catch {}
-    }
-
-    const tipo = conn.user.jid === global.conn.user.jid ? '𝗣𝗿𝗶𝗻𝗰𝗶𝗽𝗮𝗹 🆅' : '𝗦𝘂𝗯𝗕𝗼𝘁 🅱'
+    const tipo = conn.user.jid === global.conn.user.jid ? '🆅 Principal' : '🅱 SubBot'
     const menuConfig = conn.menu || defaultMenu
 
     const _text = [
@@ -81,11 +77,19 @@ const handler = async (m, { conn, usedPrefix: _p }) => {
           .map(menu => menu.help.map(h => 
             menuConfig.body
               .replace(/%cmd/g, menu.prefix ? h : `${_p}${h}`)
-              .replace(/%islimit/g, menu.limit ? '⭐' : '')
-              .replace(/%isPremium/g, menu.premium ? '🪪' : '')
+              .replace(/%islimit/g, menu.limit ? ' 🔸[LIMIT]' : '')
+              .replace(/%isPremium/g, menu.premium ? ' 💎[PREMIUM]' : '')
           ).join('\n')).join('\n')
-        return [menuConfig.header.replace(/%category/g, tags[tag]), cmds, menuConfig.footer].join('\n')
-      }),
+        
+        if (cmds.trim()) {
+          return [
+            menuConfig.header.replace(/%category/g, tags[tag]),
+            cmds,
+            menuConfig.footer
+          ].join('\n')
+        }
+        return ''
+      }).filter(Boolean),
       menuConfig.after
     ].join('\n')
 
@@ -116,14 +120,23 @@ const handler = async (m, { conn, usedPrefix: _p }) => {
     const isURL = /^https?:\/\//i.test(bannerFinal)
     const imageContent = isURL ? { image: { url: bannerFinal } } : { image: fs.readFileSync(bannerFinal) }
 
-    // --- Botón agregado ---
+    // Botones mejorados
     const buttons = [
-      { buttonId: '.code', buttonText: { displayText: '🐦‍🔥 Ser SubBot' }, type: 1 }
+      { buttonId: '.code', buttonText: { displayText: '🐦‍🔥 Crear SubBot' }, type: 1 },
+      { buttonId: '.owner', buttonText: { displayText: '👑 Propietario' }, type: 1 },
+      { buttonId: '.donar', buttonText: { displayText: '💸 Donar' }, type: 1 }
     ]
 
     await conn.sendMessage(
       m.chat,
-      { ...imageContent, caption: text.trim(), footer: '🦖 Menu de comandos.. ', buttons, headerType: 4, mentionedJid: conn.parseMention(text) },
+      { 
+        ...imageContent, 
+        caption: text.trim(), 
+        footer: '⚡ Gohan Beast Bot - Todos los derechos reservados ⚡', 
+        buttons, 
+        headerType: 4, 
+        mentionedJid: conn.parseMention(text) 
+      },
       { quoted: m }
     )
   } catch (e) {
