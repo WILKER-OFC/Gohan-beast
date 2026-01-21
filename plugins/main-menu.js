@@ -1,184 +1,376 @@
 import fs from 'fs'
-import { join } from 'path'
-import { xpRange } from '../lib/levelling.js'
+import { getBotVisual } from '../subbotManager.js'
 
-const tags = {
-  serbot: '🫟 SUBBOTS',
-  eco: '💸 ECONOMÍA',
-  downloader: '⬇️ DESCARGAS',
-  tools: '🛠️ HERRAMIENTAS',
-  owner: '👑 PROPIETARIO',
-  info: 'ℹ️ INFORMACIÓN',
-  game: '🎮 JUEGOS',
-  gacha: '🎲 GACHA ANIME',
-  reacciones: '💕 ANIME REACCIONES',
-  group: '👥 GRUPOS',
-  search: '🔎 BUSCADORES',
-  sticker: '📌 STICKERS',
-  ia: '🤖 IA',
-  channel: '📺 CANALES',
-  fun: '😂 DIVERSIÓN',
+function formatUptime(totalSeconds = 0) {
+  const s = Math.max(0, Math.floor(Number(totalSeconds) || 0))
+  const d = Math.floor(s / 86400)
+  const h = Math.floor((s % 86400) / 3600)
+  const m = Math.floor((s % 3600) / 60)
+  const ss = s % 60
+  const parts = []
+  if (d) parts.push(`${d} dias`)
+  if (h || d) parts.push(`${h} horas`)
+  if (m || h || d) parts.push(`${m} minutos`)
+  parts.push(`${ss} segundos`)
+  return parts.join(' ')
 }
 
-const defaultMenu = {
-  before: `
-⚡️ *GOHAŃ BEAST BOT* ⚡️
-Hola, soy %botname *( %tipo )*
-*%name*, %greeting
-
-📢 *CANAL:* https://whatsapp.com/channel/0029Vb724SDHltY4qGU9QS3S
-
-> 📅 Fecha = *%date*
-> ⏱ Actividad = *%uptime*
-%readmore
-`.trimStart(),
-
-  header: '\n\`%category 🥞\`',
-  body: '\`🧃\` *%cmd* %islimit %isPremium',
-  footer: '',
-  after: '\n⚡️ *Gohan Beast Bot* - Creado por WILKER OFC.',
-}
-
-const handler = async (m, { conn, usedPrefix: _p }) => {
+function formatDateTimeChicago(date = new Date()) {
   try {
-    const { exp, limit, level } = global.db.data.users[m.sender]
-    const { min, xp, max } = xpRange(level, global.multiplier)
-    const name = await conn.getName(m.sender)
-
-    const d = new Date(Date.now() + 3600000)
-    const date = d.toLocaleDateString('es', { day: 'numeric', month: 'long', year: 'numeric' })
-
-    const help = Object.values(global.plugins)
-      .filter(p => !p.disabled)
-      .map(p => ({
-        help: Array.isArray(p.help) ? p.help : [p.help],
-        tags: Array.isArray(p.tags) ? p.tags : [p.tags],
-        prefix: 'customPrefix' in p,
-        limit: p.limit,
-        premium: p.premium,
-      }))
-
-    // Cambiar nombre del bot a "Gohan Beast Bot"
-    let nombreBot = 'Gohan Beast Bot'
-    // Usar la imagen proporcionada como banner por defecto
-    let bannerFinal = 'https://d.uguu.se/FLmbfoqM.jpeg'
-
-    const botActual = conn.user?.jid?.split('@')[0].replace(/\D/g, '')
-    const configPath = join('./JadiBots', botActual, 'config.json')
-    
-    // Verificar si el archivo de configuración existe y leerlo
-    if (fs.existsSync(configPath)) {
-      try {
-        const config = JSON.parse(fs.readFileSync(configPath))
-        // Solo usar el nombre del config si no hemos establecido "Gohan Beast Bot"
-        if (config.name && nombreBot === 'Gohan Beast Bot') {
-          nombreBot = config.name
-        }
-        // Solo usar el banner del config si no hemos establecido la imagen proporcionada
-        if (config.banner && bannerFinal === 'https://d.uguu.se/FLmbfoqM.jpeg') {
-          bannerFinal = config.banner
-        }
-      } catch (e) {
-        console.error('Error leyendo config.json:', e)
-      }
-    }
-
-    const tipo = conn.user.jid === global.conn.user.jid ? '𝗣𝗿𝗶𝗻𝗰𝗶𝗽𝗮𝗹 🆅' : '𝗦𝘂𝗯𝗕𝗼𝘁 🅱'
-    const menuConfig = conn.menu || defaultMenu
-
-    const _text = [
-      menuConfig.before,
-      ...Object.keys(tags).map(tag => {
-        const cmds = help
-          .filter(menu => menu.tags?.includes(tag))
-          .map(menu => menu.help.map(h => 
-            menuConfig.body
-              .replace(/%cmd/g, menu.prefix ? h : `${_p}${h}`)
-              .replace(/%islimit/g, menu.limit ? '⭐' : '')
-              .replace(/%isPremium/g, menu.premium ? '🪪' : '')
-          ).join('\n')).join('\n')
-        return [menuConfig.header.replace(/%category/g, tags[tag]), cmds, menuConfig.footer].join('\n')
-      }),
-      menuConfig.after
-    ].join('\n')
-
-    const replace = {
-      '%': '%',
-      p: _p,
-      botname: nombreBot,
-      taguser: '@' + m.sender.split('@')[0],
-      exp: exp - min,
-      maxexp: xp,
-      totalexp: exp,
-      xp4levelup: max - exp,
-      level,
-      limit,
-      name,
-      date,
-      uptime: clockString(process.uptime() * 1000),
-      tipo,
-      readmore: readMore,
-      greeting,
-    }
-
-    const text = _text.replace(
-      new RegExp(`%(${Object.keys(replace).sort((a, b) => b.length - a.length).join('|')})`, 'g'),
-      (_, name) => String(replace[name])
-    )
-
-    // Preparar la imagen del banner
-    const isURL = /^https?:\/\//i.test(bannerFinal)
-    const imageContent = isURL ? { image: { url: bannerFinal } } : { image: fs.readFileSync(bannerFinal) }
-
-    // Botón agregado
-    const buttons = [
-      { buttonId: '.code', buttonText: { displayText: '🔵 Ser SubBot' }, type: 1 }
-{ buttonId: '.owner', buttonText: { displayText: '🖥️ Propietario' }, type: 1 }
-    ]
-
-    // Enviar el mensaje con el menú
-    await conn.sendMessage(
-      m.chat,
-      { 
-        ...imageContent, 
-        caption: text.trim(), 
-        footer: '⚡️ *Gohan Beast Bot* - Menú de comandos', 
-        buttons, 
-        headerType: 4, 
-        mentionedJid: conn.parseMention(text) 
-      },
-      { quoted: m }
-    )
-  } catch (e) {
-    console.error('❌ Error en el menú:', e)
-    conn.reply(m.chat, '❎ Lo sentimos, el menú tiene un error.', m)
+    const dtf = new Intl.DateTimeFormat('es-ES', {
+      timeZone: 'America/Chicago',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false
+    })
+    return dtf.format(date)
+  } catch {
+    const pad = (n) => String(n).padStart(2, '0')
+    const y = date.getFullYear()
+    const mo = pad(date.getMonth() + 1)
+    const da = pad(date.getDate())
+    const hh = pad(date.getHours())
+    const mm = pad(date.getMinutes())
+    const ss = pad(date.getSeconds())
+    return `${da}/${mo}/${y} ${hh}:${mm}:${ss}`
   }
 }
 
-handler.command = ['menu', 'help', 'hélp', 'menú', 'ayuda']
-handler.register = false
+let handler = async (m, { conn }) => {
+  const from = m.key.remoteJid
+  const visual = getBotVisual(conn)
+
+  const bannerPath = visual?.banner
+  const bannerExists = bannerPath && fs.existsSync(bannerPath)
+  const identity = visual.isSubBot ? 'Sub-Bot' : 'Principal'
+
+  const nowText = formatDateTimeChicago(new Date())
+  const uptimeText = formatUptime(process.uptime())
+
+  const menuText = `
+「✿」¡Hola Soy \`${visual.name || globalThis.nombrebot || 'Bot'}\`! *${identity}*
+❍ *Fecha y hora:* *${nowText}*
+❑ *Uptime:* *${uptimeText}*
+
+❀ *Descargas & Búsquedas*
+> ✐ *.play*
+> ❀ Descarga audios de YouTube.
+> ✐ *.play2*
+> ❀ Descarga videos de YouTube.
+> ✐ *.mediafire*
+> ❀ Descarga archivos de mediafire solo con el link.
+> ✐ *.facebook*
+> ❀ Descarga videos de facebook.
+> ✐ *.tiktok*
+> ❀ Descarga videos de tiktok.
+> ✐ *.instagram*
+> ❀ Descarga videos de instagram.
+> ✐ *.ytsearch*
+> ❀ Busca videos por texto en YouTube.
+> ✐ *.pinterest*
+> ❀ Busca imágenes en pinterest.
+> ✐ *.wikipedia*
+> ❀ Busca lo que quieras en wikipedia.
+
+❀ *Inteligencia Artificial*
+> ✐ *.imgia*
+> ❀ Genera una imagen a partir de un prompt.
+> ✐ *.gemini*
+> ❀ Habla con el modelo gemini 2.5 flash.
+
+❀ *Sub-Bots*
+> ✐ *.code*
+> ❀ Hazte subbot.
+> ✐ *.setname*
+> ❀ Cambia el nombre de tu Socket.
+> ✐ *.setbanner*
+> ❀ Cambia la imagen de tu Socket.
+> ✐ *.setprefix*
+> ❀ Cambia el prefijo de tu Socket.
+> ✐ *.bots*
+> ❀ Mira los total subbots conectados.
+
+❀ *Random*
+> ✐ *.meme*
+> ❀ Envía un meme aleatorio en imagen.
+
+❀ *Utilidades*
+> 🜸 *.tourl*
+> ❀ Sube archivos y devuelve link.
+> ✐ *.s*
+> ❀ Crea un sticker desde imagen o video.
+> ✐ *.toimg*
+> ❀ Convierte un sticker a imagen.
+> ✐ *.tomp4*
+> ❀ Convierte un sticker animado en imagen.
+
+❀ *Reacciones Anime*
+> ✐ *.angry / *.enojado*
+> ✐ *.bath / *.bañarse*
+> ✐ *.bite / *.morder*
+> ✐ *.bleh / *.lengua*
+> ✐ *.blush / *.sonrojarse*
+> ✐ *.bored / *.aburrido*
+> ✐ *.clap / *.aplaudir*
+> ✐ *.coffee / *.cafe / *.café*
+> ✐ *.cry / *.llorar*
+> ✐ *.cuddle / *.acurrucarse*
+> ✐ *.dance / *.bailar*
+> ✐ *.drunk / *.borracho*
+> ✐ *.eat / *.comer*
+> ✐ *.facepalm / *.palmadacara*
+> ✐ *.happy / *.feliz*
+> ✐ *.hug / *.abrazar*
+> ✐ *.kill / *.matar*
+> ✐ *.kiss / *.muak*
+> ✐ *.laugh / *.reirse*
+> ✐ *.lick / *.lamer*
+> ✐ *.slap / *.bofetada*
+> ✐ *.sleep / *.dormir*
+> ✐ *.smoke / *.fumar*
+> ✐ *.spit / *.escupir*
+> ✐ *.step / *.pisar*
+> ✐ *.think / *.pensar*
+> ✐ *.love / *.enamorado / *.enamorada*
+> ✐ *.pat / *.palmadita / *.palmada*
+> ✐ *.poke / *.picar*
+> ✐ *.pout / *.pucheros*
+> ✐ *.punch / *.pegar / *.golpear*
+> ✐ *.preg / *.preñar / *.embarazar*
+> ✐ *.run / *.correr*
+> ✐ *.sad / *.triste*
+> ✐ *.scared / *.asustada / *.asustado*
+> ✐ *.seduce / *.seducir*
+> ✐ *.shy / *.timido / *.timida*
+> ✐ *.walk / *.caminar*
+> ✐ *.dramatic / *.drama*
+> ✐ *.kisscheek / *.beso*
+> ✐ *.wink / *.guiñar*
+> ✐ *.cringe / *.avergonzarse*
+> ✐ *.smug / *.presumir*
+> ✐ *.smile / *.sonreir*
+> ✐ *.highfive / *.5*
+> ✐ *.handhold / *.mano*
+> ✐ *.bully / *.bullying*
+> ✐ *.wave / *.hola / *.ola*
+
+❀ *Economía*
+> ✐ *.einfo / *.economyinfo*
+> ❀ Muestra tu info de economía (cooldowns + dinero).
+> ✐ *.daily*
+> ❀ Reclama tu recompensa diaria.
+> ✐ *.weekly*
+> ❀ Reclama tu recompensa semanal.
+> ✐ *.work / *.w*
+> ❀ Trabaja y gana dinero.
+> ✐ *.crime*
+> ❀ Haz un crimen y gana o pierde.
+> ✐ *.slut*
+> ❀ Turno nocturno (riesgo/recompensa).
+> ✐ *.slot <cantidad>*
+> ❀ Apuesta en la máquina.
+> ✐ *.beg*
+> ❀ Mendiga y gana un poco.
+> ✐ *.coinflip / *.flip <cantidad> [cara/cruz]*
+> ❀ Apuesta a cara o cruz.
+> ✐ *.roulette / *.rt <cantidad> <rojo/negro/verde>*
+> ❀ Ruleta rápida (verde paga más).
+> ✐ *.invest <cantidad>*
+> ❀ Invierte (cobra luego con collect).
+> ✐ *.collect*
+> ❀ Cobra tu inversión.
+> ✐ *.depositar / *.d <cantidad/all>*
+> ❀ Deposita dinero al banco.
+> ✐ *.retirar / *.withdraw <cantidad/all>*
+> ❀ Retira dinero del banco.
+> ✐ *.robar / *.rob @user*
+> ❀ Intenta robar a un usuario.
+> ✐ *.pay / *.givecoins @user <cantidad/all>*
+> ❀ Envía dinero a otro usuario.
+> ✐ *.bal / *.coins*
+> ❀ Mira tu balance.
+> ✐ *.baltop / *.economyboard [página]*
+> ❀ Top de usuarios con más dinero.
+
+❀ *Perfil*
+> ✐ *.perfil / *.profile*
+> ❀ Muestra tu perfil (o el de alguien mencionando / respondiendo).
+> ✐ *.setprofile*
+> ❀ Muestra las opciones para configurar tu perfil.
+> ✐ *.setbirth 01/01/2000* / *.delbirth*
+> ❀ Establece o borra tu cumpleaños.
+> ✐ *.setgenre hombre|mujer|otro* / *.delgenre*
+> ❀ Establece o borra tu género.
+> ✐ *.setdesc <texto>* / *.deldesc*
+> ❀ Establece o borra tu descripción.
+> ✐ *.pfp @user*
+> ❀ Muestra la foto de perfil de un usuario.
+
+❀ *Gacha*
+> ✐ *.rw / *.roll*
+> ❀ Tira una waifu (roll).
+> ✐ *.c / *.claim*
+> ❀ Reclama tu último roll.
+> ✐ *.ultimoroll*
+> ❀ Muestra tu último roll activo.
+> ✐ *.ginfo*
+> ❀ Tu información de gacha.
+> ✐ *.waifus / *.harem*
+> ❀ Mira tu inventario.
+> ✐ *.waifuinfo / *.charinfo <id|nombre>*
+> ❀ Información de una waifu.
+> ✐ *.charimage / *.charvideo <id|nombre>*
+> ❀ Ver media aleatoria del personaje.
+> ✐ *.buscarwaifu <texto>*
+> ❀ Busca por nombre u origen.
+> ✐ *.coleccion*
+> ❀ Resumen de tu colección.
+> ✐ *.market / *.haremshop [página]*
+> ❀ Mercado de waifus.
+> ✐ *.venderwaifu / *.sell <id> <precio>*
+> ❀ Pon una waifu en venta.
+> ✐ *.cancelarventa / *.removesale <id>*
+> ❀ Quita una waifu del mercado.
+> ✐ *.comprarwaifu / *.buychar <id>*
+> ❀ Compra del mercado.
+> ✐ *.regalar / *.givechar <id|nombre> @user*
+> ❀ Regala una waifu.
+> ✐ *.giveallharem @user*
+> ❀ Regala todo tu harem.
+> ✐ *.fav [id]*
+> ❀ Marca/ver tu waifu favorita.
+> ✐ *.favtop*
+> ❀ Top de waifus favoritas.
+> ✐ *.waifusboard [número]*
+> ❀ Top waifus por valor.
+> ✐ *.trade @user <tuID> / <suID>*
+> ❀ Intercambia waifus.
+> ✐ *.vote <id|nombre>*
+> ❀ Vota para subir valor.
+> ✐ *.setclaimmsg <texto> / *.delclaimmsg*
+> ❀ Personaliza el mensaje al reclamar.
+> ✐ *.delwaifu <id>*
+> ❀ Elimina una waifu de tu harem.
+> ✐ *.topwaifus*
+> ❀ Top coleccionistas.
+
+❀ *Gestión de Grupos*
+> ✐ *.welcome/antilink/avisos on/off*
+> ❀ Activa/desactiva los eventos en un grupo.
+> ✐ *.banchat / *.unbanchat*
+> ❀ Desactiva/activa el bot en este grupo.
+> ✐ *.linkgc*
+> ❀ Obtén el link de invitación del grupo.
+> ✐ *.tagall [mensaje]*
+> ❀ Menciona a todos los participantes.
+> ✐ *.kick*
+> ❀ Expulsa a un usuario del grupo.
+> ✐ *.promote*
+> ❀ Promueve a admin.
+> ✐ *.demote*
+> ❀ Degrada a miembro.
+> ✐ *.gp*
+> ❀ Abre o cierra el grupo.
+> ✐ *.setgpname <nombre>*
+> ❀ Cambia el nombre del grupo.
+> ✐ *.setgpdesc <texto>*
+> ❀ Cambia la descripción del grupo.
+> ✐ *.setwelcome <mensaje>*
+> ❀ Personaliza el mensaje de bienvenida.
+> ✐ *.setbye <mensaje>*
+> ❀ Personaliza el mensaje de despedida.
+
+❀ *Información*
+> ✐ *.menu*
+> ❀ Muestra este menú.
+> ✐ *.ping*
+> ❀ Muestra la velocidad de respuesta del bot.
+> ✐ *.report*
+> ❀ Informa de un error al creador.
+
+❀ *Dueño*
+> ✐ *.update*
+> ❀ Actualiza el bot desde Git.
+`.trim()
+
+  const { prepareWAMessageMedia, generateWAMessageFromContent } = await import('@whiskeysockets/baileys')
+
+  const contextInfo = {
+    forwardingScore: 999999,
+    isForwarded: true
+  }
+
+  let header = { title: '' }
+
+  try {
+    if (bannerExists) {
+      const media = await prepareWAMessageMedia(
+        { image: fs.readFileSync(bannerPath) },
+        { upload: conn.waUploadToServer }
+      )
+      header = { hasMediaAttachment: true, imageMessage: media.imageMessage }
+    } else if (typeof bannerPath === 'string' && /^https?:\/\//i.test(bannerPath)) {
+      const media = await prepareWAMessageMedia(
+        { image: { url: bannerPath } },
+        { upload: conn.waUploadToServer }
+      )
+      header = { hasMediaAttachment: true, imageMessage: media.imageMessage }
+    }
+  } catch {
+    header = { title: '' }
+  }
+
+  const content = generateWAMessageFromContent(
+    from,
+    {
+      viewOnceMessage: {
+        message: {
+          interactiveMessage: {
+            header,
+            body: { text: menuText },
+            footer: { text: 'Hecho por *Ado* :D' },
+            contextInfo,
+            nativeFlowMessage: {
+              buttons: [
+                {
+                  name: 'cta_url',
+                  buttonParamsJson: JSON.stringify({
+                    display_text: '𝗛𝗮𝘇𝘁𝗲 𝗦𝘂𝗯𝗕𝗼𝘁',
+                    url: 'https://meow.hostrta.win'
+                  })
+                },
+                {
+                  name: 'cta_url',
+                  buttonParamsJson: JSON.stringify({
+                    display_text: '𝗖𝗮𝗻𝗮𝗹',
+                    url: 'https://whatsapp.com/channel/0029Vb75yXeKbYMVbG6Gjv3w'
+                  })
+                },
+                {
+                  name: 'cta_url',
+                  buttonParamsJson: JSON.stringify({
+                    display_text: '𝗢𝗽𝗲𝗻 𝗦𝗼𝘂𝗿𝗰𝗲',
+                    url: 'https://github.com/Ado21/WaMeowBot'
+                  })
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    { quoted: m }
+  )
+
+  await conn.relayMessage(from, content.message, { messageId: content.key.id })
+}
+
+handler.help = ['menu', 'help', 'ayuda']
+handler.tags = ['main']
+handler.command = ['menu', 'help', 'ayuda']
+
 export default handler
-
-// Utilidades
-const more = String.fromCharCode(8206)
-const readMore = more.repeat(4001)
-
-function clockString(ms) {
-  let h = isNaN(ms) ? '--' : Math.floor(ms / 3600000)
-  let m = isNaN(ms) ? '--' : Math.floor(ms / 60000) % 60
-  let s = isNaN(ms) ? '--' : Math.floor(ms / 1000) % 60
-  return [h, m, s].map(v => v.toString().padStart(2, '0')).join(':')
-}
-
-const hour = new Date().getHours()
-const greetingMap = {
-  0: 'una linda noche 🌙', 1: 'una linda noche 💤', 2: 'una linda noche 🦉',
-  3: 'una linda mañana ✨', 4: 'una linda mañana 💫', 5: 'una linda mañana 🌅',
-  6: 'una linda mañana 🌄', 7: 'una linda mañana 🌅', 8: 'una linda mañana 💫',
-  9: 'una linda mañana ✨', 10: 'un lindo día 🌞', 11: 'un lindo día 🌨',
-  12: 'un lindo día ❄', 13: 'un lindo día 🌤', 14: 'una linda tarde 🌇',
-  15: 'una linda tarde 🥀', 16: 'una linda tarde 🌹', 17: 'una linda tarde 🌆',
-  18: 'una linda noche 🌙', 19: 'una linda noche 🌃', 20: 'una linda noche 🌌',
-  21: 'una linda noche 🌃', 22: 'una linda noche 🌙', 23: 'una linda noche 🌃',
-}
-const greeting = 'Espero que tengas ' + (greetingMap[hour] || 'un buen día')
