@@ -25,9 +25,9 @@ const tags = {
 // Menú uwu con diseño Gohan Beast >w<
 const defaultMenu = {
   before: `
-╔══════════════════════════╗
-║   🐉 *GOHAŃ BEAST BOT* ⚡   ║
-╠══════════════════════════╣
+╔══════════════════╗
+║🐉*GOHAŃ BEAST BOT* ║
+╠══════════════════╣
 ║ Hola~ soy %botname (◕ᴗ◕✿)
 ║ *%name*, %greeting jeje
 ║ 
@@ -37,11 +37,11 @@ const defaultMenu = {
 ║ 💎 *Energía:* %limit
 ║ 📅 *Fecha:* %date
 ║ ⏱️ *Activo:* %uptime
-╠═════════════════════════╣
+╠═══════════════╣
 ║     📢 *CANAL DRAGON BALL*     
 ║ https://whatsapp.com/channel/
 ║ 0029Vb724SDHltY4qGU9QS3S
-╠═════════════════════════╣
+╠═══════════════╣
 ║      🌀 *COMANDOS BEAST*       
 %readmore
 `.trimStart(),
@@ -50,12 +50,12 @@ const defaultMenu = {
   body: '║ 🌀 *%cmd* %islimit %isPremium',
   footer: '',
   after: `
-╠═══════════════════════╣
+╠══════════════╣
 ║🐉 *Gohan Beast Bot* 
 ║⚡ Creado por Wilker~ (◕‿◕✿)
 ║🌀 Base: Dragon Ball Z/Super
 ║💫 Domina el chat con poder Saiyan!
-╚═══════════════════════╝
+╚══════════════╝
 
 *¡Que la fuerza Saiyan te acompañe!* 🌀✨
 `.trim(),
