@@ -43,7 +43,7 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
     }
 
     const caption = `
-✧━───『 𝙸𝚗𝚏𝚘 𝚍𝚎𝚕 𝚅𝚒𝚍𝚎𝚘 』───━✧
+✧━『 𝙸𝚗𝚏𝚘 𝚍𝚎𝚕 𝚅𝚒𝚍𝚎𝚘 』━✧
 
 🎼 𝑻𝒊́𝒕𝒖𝒍𝒐: ${title}
 📺 𝑪𝒂𝒏𝒂𝒍: ${authorName}
@@ -51,7 +51,7 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
 ⏳ 𝑫𝒖𝒓𝒂𝒄𝒊𝒐́𝒏: ${durationTimestamp}
 🌐 𝑬𝒏𝒍𝒂𝒄𝒆: ${url}
 
-✧━───『 *GOHAN BEAS BOT* 』───━✧
+✧━『 *GOHAN BEAS BOT* 』━✧
 ⚡ 𝑷𝒐𝒘𝒆𝒓𝒆𝒅 𝒃𝒚 WILKER OFC ⚡
 `
 
