@@ -25,11 +25,11 @@ const tags = {
 // Menú uwu con diseño Gohan Beast >w<
 const defaultMenu = {
   before: `
-╔═══════════════════════════════╗
-║      🐉 *GOHAŃ BEAST BOT* ⚡    ║
-╠═══════════════════════════════╣
+╔══════════════════════════╗
+║   🐉 *GOHAŃ BEAST BOT* ⚡   ║
+╠══════════════════════════╣
 ║ Hola~ soy %botname (◕ᴗ◕✿)
-║ *%name*, %greeting uwu
+║ *%name*, %greeting jeje
 ║ 
 ║ 📱 *Usuario:* @%taguser
 ║ 🐉 *Tipo:* %tipo
@@ -37,27 +37,27 @@ const defaultMenu = {
 ║ 💎 *Energía:* %limit
 ║ 📅 *Fecha:* %date
 ║ ⏱️ *Activo:* %uptime
-╠═══════════════════════════════╣
+╠═════════════════════════╣
 ║     📢 *CANAL DRAGON BALL*     
 ║ https://whatsapp.com/channel/
 ║ 0029Vb724SDHltY4qGU9QS3S
-╠═══════════════════════════════╣
+╠═════════════════════════╣
 ║      🌀 *COMANDOS BEAST*       
 %readmore
 `.trimStart(),
 
-  header: '\n╠══ ✦ %category ✦ ══╣\n',
-  body: '║ 🌸 *%cmd* %islimit %isPremium',
+  header: '\n╠═ ✦ %category ✦ ═╣\n',
+  body: '║ 🌀 *%cmd* %islimit %isPremium',
   footer: '',
   after: `
-╠═══════════════════════════════╣
-║ 🐉 *Gohan Beast Bot* 
-║ ⚡ Creado por Wilker~ (◕‿◕✿)
-║ 🌀 Base: Dragon Ball Z/Super
-║ 💫 ¡Domina el chat con poder Saiyan!
-╚═══════════════════════════════╝
+╠═══════════════════════╣
+║🐉 *Gohan Beast Bot* 
+║⚡ Creado por Wilker~ (◕‿◕✿)
+║🌀 Base: Dragon Ball Z/Super
+║💫 Domina el chat con poder Saiyan!
+╚═══════════════════════╝
 
-*¡Que la fuerza Saiyan te acompañe!* 🌸✨
+*¡Que la fuerza Saiyan te acompañe!* 🌀✨
 `.trim(),
 }
 
@@ -103,7 +103,7 @@ const handler = async (m, { conn, usedPrefix: _p }) => {
         if (config.name) nombreBot = config.name
         if (config.banner) bannerFinal = config.banner
       } catch (e) {
-        console.error('🌸 Error leyendo config:', e)
+        console.error('🌀 Error leyendo config:', e)
       }
     }
 
@@ -120,7 +120,7 @@ const handler = async (m, { conn, usedPrefix: _p }) => {
             menuConfig.body
               .replace(/%cmd/g, menu.prefix ? h : `${_p}${h}`)
               .replace(/%islimit/g, menu.limit ? '🔒' : '')
-              .replace(/%isPremium/g, menu.premium ? '💎' : '🌸')
+              .replace(/%isPremium/g, menu.premium ? '💎' : '🌀')
           ).join('\n')).join('\n')
         return cmds ? [menuConfig.header.replace(/%category/g, tags[tag]), cmds, menuConfig.footer].join('\n') : ''
       }).filter(Boolean),
@@ -187,7 +187,7 @@ const handler = async (m, { conn, usedPrefix: _p }) => {
       { 
         ...imageContent, 
         caption: text.trim(), 
-        footer: '🌸 *Gohan Beast Bot* - ¡Comandos Dragon Ball!', 
+        footer: '🌀 *Gohan Beast Bot* - ¡Comandos Dragon Ball!', 
         buttons, 
         headerType: 4, 
         mentionedJid: conn.parseMention(text),
@@ -207,14 +207,14 @@ const handler = async (m, { conn, usedPrefix: _p }) => {
     )
 
     // Reacciones uwu
-    await m.react('🌸')
+    await m.react('🌀')
     setTimeout(() => m.react('⚡'), 500)
     setTimeout(() => m.react('🐉'), 1000)
 
   } catch (e) {
     console.error('💥 Error en el menú uwu:', e)
     await conn.reply(m.chat, 
-`🌸 *¡Ups! Algo salió mal~* (´•̥̥̥ω•̥̥̥\`)
+`🌀 *¡Ups! Algo salió mal~* (´•̥̥̥ω•̥̥̥\`)
 
 El menú Saiyan no pudo cargarse...
 ⚡ *Causa:* Energía insuficiente
@@ -253,14 +253,14 @@ function getUwUGreeting() {
   const hour = new Date().getHours()
   const greetings = {
     0: 'una noche mágica bajo las estrellas 🌙✨',
-    1: 'una noche de sueños Saiyan 💤🌸',
+    1: 'una noche de sueños Saiyan 💤 🌀',
     2: 'una noche llena de energía Ki 🌌⚡',
     3: 'un amanecer en la Room of Spirit and Time 🌅⏳',
-    4: 'un amanecer de meditación Kame 🧘🌸',
+    4: 'un amanecer de meditación Kame 🧘🌀',
     5: 'un amanecer de entrenamiento con King Kai 👑🌅',
     6: 'una mañana de Kamehameha en la playa 🏖️🌀',
     7: 'una mañana en Kame House con tortugas 🏠🐢',
-    8: 'una mañana volando en Nimbus ☁️🌸',
+    8: 'una mañana volando en Nimbus ☁️ 🌀',
     9: 'una mañana en el Tenkaichi Budokai 🥋🎯',
     10: 'un día de batalla en el Cell Games ⚔️💥',
     11: 'un día de torneo del Poder 💪🌟',
