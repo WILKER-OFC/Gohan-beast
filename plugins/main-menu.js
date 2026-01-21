@@ -4,20 +4,20 @@ import { xpRange } from '../lib/levelling.js'
 
 // Categorías con temática Gohan Beast uwu
 const tags = {
-  serbot: '🐉 SUB-SAIYANS',
+  Subbots: '🐉 SUBBOTS',
   eco: '⚡ ENERGÍA SAIYAN',
-  downloader: '🌀 DESCARGAS DRAGON BALL',
-  tools: '🔧 HERRAMIENTAS DEL DOJO',
+  downloader: '🌀 DESCARGAS',
+  tools: '🔧 HERRAMIENTAS',
   owner: '👑 MAESTRO SAIYAN',
-  info: 'ℹ️ INFORMACIÓN DRAGON BALL',
-  game: '🎮 ENTRENAMIENTO SAIYAN',
-  gacha: '🎲 ESFERAS DEL DRAGÓN',
-  reacciones: '💥 REACCIONES KAME',
+  info: 'ℹ️ INFORMACIÓN',
+  game: '🎮 ENTRENAMIENTO',
+  gacha: '🎲 ECO DEL REY',
+  reacciones: '💥 REACCIONES',
   group: '👥 DOJO SAIYAN',
-  search: '🔎 BUSCADOR KAME HOUSE',
-  sticker: '📌 STICKERS DBZ',
-  ia: '🤖 ANDROIDE 16',
-  channel: '📺 CANAL KAME HOUSE',
+  search: '🔎 BUSCADOR KAME',
+  sticker: '📌 STICKERS',
+  ia: '🤖 ANDROID 16',
+  channel: '📺 KAME HOUSE',
   fun: '😂 DIVERSIÓN SAIYAN',
   beast: '🐉 COMANDOS BEAST'
 }
@@ -26,7 +26,7 @@ const tags = {
 const defaultMenu = {
   before: `
 ╔══════════════════╗
-║🐉*GOHAŃ BEAST BOT* ║
+║🐉 *GOHAŃ BEAST BOT* 🌀    ║
 ╠══════════════════╣
 ║ Hola~ soy %botname (◕ᴗ◕✿)
 ║ *%name*, %greeting jeje
@@ -37,25 +37,25 @@ const defaultMenu = {
 ║ 💎 *Energía:* %limit
 ║ 📅 *Fecha:* %date
 ║ ⏱️ *Activo:* %uptime
-╠═══════════════╣
+╠═════════════════════╣
 ║     📢 *CANAL DRAGON BALL*     
 ║ https://whatsapp.com/channel/
 ║ 0029Vb724SDHltY4qGU9QS3S
-╠═══════════════╣
+╠═════════════════════╣
 ║      🌀 *COMANDOS BEAST*       
 %readmore
 `.trimStart(),
 
-  header: '\n╠═ ✦ %category ✦ ═╣\n',
+  header: '\n╠═ %category ═╣\n',
   body: '║ 🌀 *%cmd* %islimit %isPremium',
   footer: '',
   after: `
-╠══════════════╣
+╠════════════════╣
 ║🐉 *Gohan Beast Bot* 
 ║⚡ Creado por Wilker~ (◕‿◕✿)
 ║🌀 Base: Dragon Ball Z/Super
 ║💫 Domina el chat con poder Saiyan!
-╚══════════════╝
+╚════════════════╝
 
 *¡Que la fuerza Saiyan te acompañe!* 🌀✨
 `.trim(),
