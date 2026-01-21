@@ -1,195 +1,183 @@
-import { promises } from 'fs'
+import fs from 'fs'
 import { join } from 'path'
 import { xpRange } from '../lib/levelling.js'
 
-let tags = {
-  'main': 'Information',
-  'search': 'Search',
-  'game': 'Games',
-  'serbot': 'Sub-Bots',
-  'rpg': 'Rpg',
-  'rg': 'Registro',
-  'sticker': 'Sticker',
-  'img': 'Image',
-  'group': 'Groups',
-  'nable': 'On / Off', 
-  'premium': 'Premium',
-  'downloader': 'Download',
-  'tools': 'Tools',
-  'fun': 'Fun',
-  'nsfw': 'Nsfw', 
-  'cmd': 'Database',
-  'owner': 'Creador', 
-  'audio': 'Audios', 
-  'advanced': 'Avanzado',
+const tags = {
+  serbot: '🫟 SUBBOTS',
+  eco: '💸 ECONOMÍA',
+  downloader: '⬇️ DESCARGAS',
+  tools: '🛠️ HERRAMIENTAS',
+  owner: '👑 PROPIETARIO',
+  info: 'ℹ️ INFORMACIÓN',
+  game: '🎮 JUEGOS',
+  gacha: '🎲 GACHA ANIME',
+  reacciones: '💕 ANIME REACCIONES',
+  group: '👥 GRUPOS',
+  search: '🔎 BUSCADORES',
+  sticker: '📌 STICKERS',
+  ia: '🤖 IA',
+  channel: '📺 CANALES',
+  fun: '😂 DIVERSIÓN',
 }
 
 const defaultMenu = {
   before: `
-  *─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─*
+⚡️ *GOHAŃ BEAST BOT* ⚡️
+Hola, soy %botname *( %tipo )*
+*%name*, %greeting
 
-“ Hola *%name* soy *Ai Hoshino*, %greeting ”
+📢 *CANAL:* https://whatsapp.com/channel/0029Vb724SDHltY4qGU9QS3S
 
-╭── ︿︿︿︿︿ *⭒   ⭒   ⭒   ⭒   ⭒   ⭒*
-┊ ‹‹ *Hello* :: *%name*
-┊•*⁀➷ °⭒⭒⭒ *【 ✯ Starlights Team ✰ 】*
-╰─── ︶︶︶︶ ✰⃕  ⌇ *⭒ ⭒ ⭒*   ˚̩̥̩̥*̩̩͙✩
-┊🍬 [ *Modo* :: *Público*
-┊📚 [ *Baileys* :: *Multi Device*
-┊⏱ [ *Tiempo Activo* :: *%uptime*
-┊👤 [ *Usuarios* :: *%totalreg*
-╰─────────
+> 📅 Fecha = *%date*
+> ⏱ Actividad = *%uptime*
 %readmore
-*─ׄ─ׅ─ׄ─⭒ L I S T A  -  M E N Ú S ⭒─ׄ─ׅ─ׄ─*
 `.trimStart(),
-  header: '╭── ︿︿︿︿︿ *⭒   ⭒   ⭒   ⭒   ⭒   ⭒*\n┊ ‹‹ *Category* :: *%category*\n┊•*⁀➷ °⭒⭒⭒ •*⁀➷ °⭒⭒⭒\n╰─── ︶︶︶︶ ✰⃕  ⌇ *⭒ ⭒ ⭒*   ˚̩̥̩̥*̩̩͙✩',
-    body: '│❄️⃟🎄┊%cmd %islimit %isPremium\n',
-   footer: '╰─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒\n',
-    after: `> [ ✰ ] ${textbot}`,
+
+  header: '\n\`%category 🥞\`',
+  body: '\`🧃\` *%cmd* %islimit %isPremium',
+  footer: '',
+  after: '\n⚡️ *Gohan Beast Bot* - Creado por WILKER OFC.',
 }
 
-let handler = async (m, { conn, usedPrefix: _p, __dirname }) => {
+const handler = async (m, { conn, usedPrefix: _p }) => {
   try {
-    let _package = JSON.parse(await promises.readFile(join(__dirname, '../package.json')).catch(_ => ({}))) || {}
-    let { exp, limit, level } = global.db.data.users[m.sender]
-    let { min, xp, max } = xpRange(level, global.multiplier)
-    let name = await conn.getName(m.sender)
-    let _uptime = process.uptime() * 1000;
-    let uptime = clockString(_uptime);
-    let totalreg = Object.keys(global.db.data.users).length
-    let rtotalreg = Object.values(global.db.data.users).filter(user => user.registered == true).length
-    let help = Object.values(global.plugins).filter(plugin => !plugin.disabled).map(plugin => {
-      return {
-        help: Array.isArray(plugin.tags) ? plugin.help : [plugin.help],
-        tags: Array.isArray(plugin.tags) ? plugin.tags : [plugin.tags],
-        prefix: 'customPrefix' in plugin,
-        limit: plugin.limit,
-        premium: plugin.premium,
-        enabled: !plugin.disabled,
+    const { exp, limit, level } = global.db.data.users[m.sender]
+    const { min, xp, max } = xpRange(level, global.multiplier)
+    const name = await conn.getName(m.sender)
+
+    const d = new Date(Date.now() + 3600000)
+    const date = d.toLocaleDateString('es', { day: 'numeric', month: 'long', year: 'numeric' })
+
+    const help = Object.values(global.plugins)
+      .filter(p => !p.disabled)
+      .map(p => ({
+        help: Array.isArray(p.help) ? p.help : [p.help],
+        tags: Array.isArray(p.tags) ? p.tags : [p.tags],
+        prefix: 'customPrefix' in p,
+        limit: p.limit,
+        premium: p.premium,
+      }))
+
+    // Cambiar nombre del bot a "Gohan Beast Bot"
+    let nombreBot = 'Gohan Beast Bot'
+    // Usar la imagen proporcionada como banner por defecto
+    let bannerFinal = 'https://d.uguu.se/FLmbfoqM.jpeg'
+
+    const botActual = conn.user?.jid?.split('@')[0].replace(/\D/g, '')
+    const configPath = join('./JadiBots', botActual, 'config.json')
+    
+    // Verificar si el archivo de configuración existe y leerlo
+    if (fs.existsSync(configPath)) {
+      try {
+        const config = JSON.parse(fs.readFileSync(configPath))
+        // Solo usar el nombre del config si no hemos establecido "Gohan Beast Bot"
+        if (config.name && nombreBot === 'Gohan Beast Bot') {
+          nombreBot = config.name
+        }
+        // Solo usar el banner del config si no hemos establecido la imagen proporcionada
+        if (config.banner && bannerFinal === 'https://d.uguu.se/FLmbfoqM.jpeg') {
+          bannerFinal = config.banner
+        }
+      } catch (e) {
+        console.error('Error leyendo config.json:', e)
       }
-    })
-    for (let plugin of help)
-      if (plugin && 'tags' in plugin)
-        for (let tag of plugin.tags)
-          if (!(tag in tags) && tag) tags[tag] = tag
-    conn.menu = conn.menu ? conn.menu : {}
-    let before = conn.menu.before || defaultMenu.before
-    let header = conn.menu.header || defaultMenu.header
-    let body = conn.menu.body || defaultMenu.body
-    let footer = conn.menu.footer || defaultMenu.footer
-    let after = conn.menu.after || (conn.user.jid == global.conn.user.jid ? '' : ``) + defaultMenu.after
-    let _text = [
-      before,
+    }
+
+    const tipo = conn.user.jid === global.conn.user.jid ? '𝗣𝗿𝗶𝗻𝗰𝗶𝗽𝗮𝗹 🆅' : '𝗦𝘂𝗯𝗕𝗼𝘁 🅱'
+    const menuConfig = conn.menu || defaultMenu
+
+    const _text = [
+      menuConfig.before,
       ...Object.keys(tags).map(tag => {
-        return header.replace(/%category/g, tags[tag]) + '\n' + [
-          ...help.filter(menu => menu.tags && menu.tags.includes(tag) && menu.help).map(menu => {
-            return menu.help.map(help => {
-              return body.replace(/%cmd/g, menu.prefix ? help : '%p' + help)
-                .replace(/%islimit/g, menu.limit ? '◜⭐◞' : '')
-                .replace(/%isPremium/g, menu.premium ? '◜🪪◞' : '')
-                .trim()
-            }).join('\n')
-          }),
-          footer
-        ].join('\n')
+        const cmds = help
+          .filter(menu => menu.tags?.includes(tag))
+          .map(menu => menu.help.map(h => 
+            menuConfig.body
+              .replace(/%cmd/g, menu.prefix ? h : `${_p}${h}`)
+              .replace(/%islimit/g, menu.limit ? '⭐' : '')
+              .replace(/%isPremium/g, menu.premium ? '🪪' : '')
+          ).join('\n')).join('\n')
+        return [menuConfig.header.replace(/%category/g, tags[tag]), cmds, menuConfig.footer].join('\n')
       }),
-      after
+      menuConfig.after
     ].join('\n')
-    let text = typeof conn.menu == 'string' ? conn.menu : typeof conn.menu == 'object' ? _text : ''
-    let replace = {
+
+    const replace = {
       '%': '%',
-      p: _p, uptime, _uptime,
-      taguser: '@' + m.sender.split("@s.whatsapp.net")[0],
-      wasp: '@0',
-      me: conn.getName(conn.user.jid),
-      npmname: _package.name,
-      version: _package.version,
-      npmdesc: _package.description,
-      npmmain: _package.main,
-      author: _package.author.name,
-      license: _package.license,
+      p: _p,
+      botname: nombreBot,
+      taguser: '@' + m.sender.split('@')[0],
       exp: exp - min,
       maxexp: xp,
       totalexp: exp,
       xp4levelup: max - exp,
-      github: _package.homepage ? _package.homepage.url || _package.homepage : '[unknown github url]',
-      greeting, level, limit, name, totalreg, rtotalreg,
-      readmore: readMore
+      level,
+      limit,
+      name,
+      date,
+      uptime: clockString(process.uptime() * 1000),
+      tipo,
+      readmore: readMore,
+      greeting,
     }
-    text = text.replace(new RegExp(`%(${Object.keys(replace).sort((a, b) => b.length - a.length).join`|`})`, 'g'), (_, name) => '' + replace[name])
 
-    let pp = 'https://telegra.ph/file/4c3e4b782c82511b3874d.mp4'
-    let pp2 = 'https://telegra.ph/file/d8c5e18ab0cfc10511f63.mp4'
-    let pp3 = 'https://telegra.ph/file/96e471a87971e2fb4955f.mp4'
-    let pp4 = 'https://telegra.ph/file/09b920486c3c291f5a9e6.mp4'
-    let pp5 = 'https://telegra.ph/file/4948429d0ab0212e9000f.mp4'
-    let pp6 = 'https://telegra.ph/file/cab0bf344ba83d79c1a47.mp4'
-    let pp7 = 'https://telegra.ph/file/6d89bd150ad55db50e332.mp4'
-    let pp8 = 'https://telegra.ph/file/e2f791011e8d183bd6b50.mp4'
-    let pp9 = 'https://telegra.ph/file/546a6a2101423efcce4bd.mp4'
-    let pp10 = 'https://telegra.ph/file/930b9fddde1034360fd86.mp4'
-    let pp11 = 'https://telegra.ph/file/81da492e08bfdb4fda695.mp4'
-    let pp12 = 'https://telegra.ph/file/ec8393df422d40f923e00.mp4'
-    let pp13 = 'https://telegra.ph/file/ba7c4a3eb7bf3d892b0c8.mp4'
-    let pp14 = 'https://tinyurl.com/ymlqb6ml'
-    let pp15 = 'https://tinyurl.com/ykv7g4zy'
-    let img = `./storage/img/menu.jpg`
-    await m.react('⭐')
-   // await conn.sendMessage(m.chat, { video: { url: [pp, pp2, pp3, pp4, pp5, pp6, pp7, pp8, pp9, pp10, pp11, pp12, pp13, pp14, pp15].getRandom() }, gifPlayback: true, caption: text.trim(), mentions: [m.sender] }, { quoted: estilo })
-    await conn.sendFile(m.chat, img, 'thumbnail.jpg', text.trim(), m, null, rcanal)
-   //await conn.sendAi(m.chat, botname, textbot, text.trim(), img, img, canal, estilo)
+    const text = _text.replace(
+      new RegExp(`%(${Object.keys(replace).sort((a, b) => b.length - a.length).join('|')})`, 'g'),
+      (_, name) => String(replace[name])
+    )
 
-} catch (e) {
-await m.react('✖️')
-throw e
+    // Preparar la imagen del banner
+    const isURL = /^https?:\/\//i.test(bannerFinal)
+    const imageContent = isURL ? { image: { url: bannerFinal } } : { image: fs.readFileSync(bannerFinal) }
+
+    // Botón agregado
+    const buttons = [
+      { buttonId: '.code', buttonText: { displayText: '🐦‍🔥 Ser SubBot' }, type: 1 }
+    ]
+
+    // Enviar el mensaje con el menú
+    await conn.sendMessage(
+      m.chat,
+      { 
+        ...imageContent, 
+        caption: text.trim(), 
+        footer: '⚡️ *Gohan Beast Bot* - Menú de comandos', 
+        buttons, 
+        headerType: 4, 
+        mentionedJid: conn.parseMention(text) 
+      },
+      { quoted: m }
+    )
+  } catch (e) {
+    console.error('❌ Error en el menú:', e)
+    conn.reply(m.chat, '❎ Lo sentimos, el menú tiene un error.', m)
+  }
 }
-}
 
-handler.help = ['menu']
-handler.tags = ['main']
-handler.command = ['menu', 'help', 'menú'] 
-handler.register = true 
-
+handler.command = ['menu', 'help', 'hélp', 'menú', 'ayuda']
+handler.register = false
 export default handler
 
-
+// Utilidades
 const more = String.fromCharCode(8206)
 const readMore = more.repeat(4001)
 
 function clockString(ms) {
-let horas = Math.floor(ms / 3600000)
-let minutos = Math.floor(ms / 60000) % 60
-let segundos = Math.floor(ms / 1000) % 60
-  console.log({ ms, horas, minutos, segundos })
-return [horas, minutos, segundos].map((v) => v.toString().padStart(2, 0)).join(":")
+  let h = isNaN(ms) ? '--' : Math.floor(ms / 3600000)
+  let m = isNaN(ms) ? '--' : Math.floor(ms / 60000) % 60
+  let s = isNaN(ms) ? '--' : Math.floor(ms / 1000) % 60
+  return [h, m, s].map(v => v.toString().padStart(2, '0')).join(':')
 }
 
-  var ase = new Date();
-  var hour = ase.getHours();
-switch(hour){
-  case 0: hour = 'una linda noche 🌙'; break;
-  case 1: hour = 'una linda noche 💤'; break;
-  case 2: hour = 'una linda noche 🦉'; break;
-  case 3: hour = 'una linda mañana ✨'; break;
-  case 4: hour = 'una linda mañana 💫'; break;
-  case 5: hour = 'una linda mañana 🌅'; break;
-  case 6: hour = 'una linda mañana 🌄'; break;
-  case 7: hour = 'una linda mañana 🌅'; break;
-  case 8: hour = 'una linda mañana 💫'; break;
-  case 9: hour = 'una linda mañana ✨'; break;
-  case 10: hour = 'un lindo dia 🌞'; break;
-  case 11: hour = 'un lindo dia 🌨'; break;
-  case 12: hour = 'un lindo dia ❄'; break;
-  case 13: hour = 'un lindo dia 🌤'; break;
-  case 14: hour = 'una linda tarde 🌇'; break;
-  case 15: hour = 'una linda tarde 🥀'; break;
-  case 16: hour = 'una linda tarde 🌹'; break;
-  case 17: hour = 'una linda tarde 🌆'; break;
-  case 18: hour = 'una linda noche 🌙'; break;
-  case 19: hour = 'una linda noche 🌃'; break;
-  case 20: hour = 'una linda noche 🌌'; break;
-  case 21: hour = 'una linda noche 🌃'; break;
-  case 22: hour = 'una linda noche 🌙'; break;
-  case 23: hour = 'una linda noche 🌃'; break;
+const hour = new Date().getHours()
+const greetingMap = {
+  0: 'una linda noche 🌙', 1: 'una linda noche 💤', 2: 'una linda noche 🦉',
+  3: 'una linda mañana ✨', 4: 'una linda mañana 💫', 5: 'una linda mañana 🌅',
+  6: 'una linda mañana 🌄', 7: 'una linda mañana 🌅', 8: 'una linda mañana 💫',
+  9: 'una linda mañana ✨', 10: 'un lindo día 🌞', 11: 'un lindo día 🌨',
+  12: 'un lindo día ❄', 13: 'un lindo día 🌤', 14: 'una linda tarde 🌇',
+  15: 'una linda tarde 🥀', 16: 'una linda tarde 🌹', 17: 'una linda tarde 🌆',
+  18: 'una linda noche 🌙', 19: 'una linda noche 🌃', 20: 'una linda noche 🌌',
+  21: 'una linda noche 🌃', 22: 'una linda noche 🌙', 23: 'una linda noche 🌃',
 }
-  var greeting = "espero que tengas " + hour;
+const greeting = 'Espero que tengas ' + (greetingMap[hour] || 'un buen día')
