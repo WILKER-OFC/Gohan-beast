@@ -159,6 +159,6 @@ const formatViews = (views) => {
 
 handler.command = ["play", "yt", "ytsearch"]
 handler.tags = ["downloader"]
-handler.register = true
+handler.register = false
 
 export default handler
