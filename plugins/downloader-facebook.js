@@ -121,7 +121,7 @@ handler.tags = ['descargas', 'beast', 'media'];
 handler.command = ['facebook', 'fb', 'face', 'fbdl'];
 handler.limit = true;
 handler.premium = false;
-handler.register = true;
+handler.register = false;
 
 // Cooldown para evitar spam
 handler.cooldown = 1000;
