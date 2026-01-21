@@ -44,7 +44,7 @@ handler.help = ['tiktok'].map(v => v + ' <enlace>');
 handler.tags = ['descargas'];
 handler.command = ['tiktok', 'tt', 'tiktokdl'];
 handler.group = true;
-handler.register = true;
+handler.register = false;
 
 export default handler;
 
