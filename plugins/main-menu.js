@@ -22,25 +22,21 @@ const tags = {
 
 const defaultMenu = {
   before: `
-⚡ *GOHAN BEAST BOT* ⚡
-*( %tipo )*
+⚡️ *GOHAŃ BEAST BOT* ⚡️
+Hola, soy %botname *( %tipo )*
+*%name*, %greeting
 
-👋 *Hola, %name!*
-${'%greeting'}
+📢 *CANAL:* https://whatsapp.com/channel/0029Vb724SDHltY4qGU9QS3S
 
-📌 *Mi nombre:* Gohan Beast Bot
-📅 *Fecha:* %date
-⏱️ *Actividad:* %uptime
-📊 *Nivel:* %level
-🎯 *Exp:* %exp/%maxexp
-
+> 📅 Fecha = *%date*
+> ⏱ Actividad = *%uptime*
 %readmore
 `.trimStart(),
 
-  header: '\n╭───「 *%category* 」',
-  body: '│ ✦ %cmd %islimit %isPremium',
-  footer: '╰─────────────',
-  after: '\n\n*⚡ Creado por WILKER OFC. ⚡*',
+  header: '\n\`%category 🥞\`',
+  body: '\`🧃\` *%cmd* %islimit %isPremium',
+  footer: '',
+  after: '\n⚡️ *Gohan Beast Bot* - Creado por WILKER OFC.',
 }
 
 const handler = async (m, { conn, usedPrefix: _p }) => {
@@ -53,7 +49,7 @@ const handler = async (m, { conn, usedPrefix: _p }) => {
     const date = d.toLocaleDateString('es', { day: 'numeric', month: 'long', year: 'numeric' })
 
     const help = Object.values(global.plugins)
-      .filter(p => p && !p.disabled)
+      .filter(p => !p.disabled)
       .map(p => ({
         help: Array.isArray(p.help) ? p.help : [p.help],
         tags: Array.isArray(p.tags) ? p.tags : [p.tags],
@@ -62,11 +58,32 @@ const handler = async (m, { conn, usedPrefix: _p }) => {
         premium: p.premium,
       }))
 
-    // Configuración fija para Gohan Beast Bot
+    // Cambiar nombre del bot a "Gohan Beast Bot"
     let nombreBot = 'Gohan Beast Bot'
-    let bannerFinal = 'https://d.uguu.se/FLmbfoqM.jpeg' // URL CORREGIDA
+    // Usar la imagen proporcionada como banner por defecto
+    let bannerFinal = 'https://d.uguu.se/FLmbfoqM.jpeg'
 
-    const tipo = conn.user.jid === global.conn.user.jid ? '🆅 Principal' : '🅱 SubBot'
+    const botActual = conn.user?.jid?.split('@')[0].replace(/\D/g, '')
+    const configPath = join('./JadiBots', botActual, 'config.json')
+    
+    // Verificar si el archivo de configuración existe y leerlo
+    if (fs.existsSync(configPath)) {
+      try {
+        const config = JSON.parse(fs.readFileSync(configPath))
+        // Solo usar el nombre del config si no hemos establecido "Gohan Beast Bot"
+        if (config.name && nombreBot === 'Gohan Beast Bot') {
+          nombreBot = config.name
+        }
+        // Solo usar el banner del config si no hemos establecido la imagen proporcionada
+        if (config.banner && bannerFinal === 'https://d.uguu.se/FLmbfoqM.jpeg') {
+          bannerFinal = config.banner
+        }
+      } catch (e) {
+        console.error('Error leyendo config.json:', e)
+      }
+    }
+
+    const tipo = conn.user.jid === global.conn.user.jid ? '𝗣𝗿𝗶𝗻𝗰𝗶𝗽𝗮𝗹 🆅' : '𝗦𝘂𝗯𝗕𝗼𝘁 🅱'
     const menuConfig = conn.menu || defaultMenu
 
     const _text = [
@@ -77,19 +94,11 @@ const handler = async (m, { conn, usedPrefix: _p }) => {
           .map(menu => menu.help.map(h => 
             menuConfig.body
               .replace(/%cmd/g, menu.prefix ? h : `${_p}${h}`)
-              .replace(/%islimit/g, menu.limit ? ' 🔸' : '')
-              .replace(/%isPremium/g, menu.premium ? ' 💎' : '')
+              .replace(/%islimit/g, menu.limit ? '⭐' : '')
+              .replace(/%isPremium/g, menu.premium ? '🪪' : '')
           ).join('\n')).join('\n')
-        
-        if (cmds.trim()) {
-          return [
-            menuConfig.header.replace(/%category/g, tags[tag]),
-            cmds,
-            menuConfig.footer
-          ].join('\n')
-        }
-        return ''
-      }).filter(Boolean),
+        return [menuConfig.header.replace(/%category/g, tags[tag]), cmds, menuConfig.footer].join('\n')
+      }),
       menuConfig.after
     ].join('\n')
 
@@ -117,56 +126,31 @@ const handler = async (m, { conn, usedPrefix: _p }) => {
       (_, name) => String(replace[name])
     )
 
-    // Botones como los pediste
+    // Preparar la imagen del banner
+    const isURL = /^https?:\/\//i.test(bannerFinal)
+    const imageContent = isURL ? { image: { url: bannerFinal } } : { image: fs.readFileSync(bannerFinal) }
+
+    // Botón agregado
     const buttons = [
-      { buttonId: '.code', buttonText: { displayText: '🐦‍🔥 Crear SubBot' }, type: 1 },
-      { buttonId: '.owner', buttonText: { displayText: '👑 Propietario' }, type: 1 },
-      { buttonId: '.donar', buttonText: { displayText: '💸 Donar' }, type: 1 }
+      { buttonId: '.code', buttonText: { displayText: '🐦‍🔥 Ser SubBot' }, type: 1 }
     ]
 
-    // Enviar mensaje con imagen y botones
+    // Enviar el mensaje con el menú
     await conn.sendMessage(
       m.chat,
       { 
-        image: { url: bannerFinal },
+        ...imageContent, 
         caption: text.trim(), 
-        footer: '⚡ Gohan Beast Bot - Todos los derechos reservados ⚡', 
+        footer: '⚡️ *Gohan Beast Bot* - Menú de comandos', 
         buttons, 
-        headerType: 4
+        headerType: 4, 
+        mentionedJid: conn.parseMention(text) 
       },
       { quoted: m }
     )
-    
   } catch (e) {
     console.error('❌ Error en el menú:', e)
-    // Si hay error con la imagen, enviar solo texto
-    await conn.reply(m.chat, `❌ Error: ${e.message}\n\nUsando menú de texto...`, m)
-    
-    // Enviar menú simple de texto como fallback
-    const simpleMenu = `
-⚡ *GOHAN BEAST BOT* ⚡
-
-👋 Hola! Soy Gohan Beast Bot
-
-📌 *Comandos disponibles:*
-• .owner - Información del creador
-• .donar - Donaciones y soporte
-• .code - Sistema de subbots
-• .menu - Ver menú completo
-
-👑 Owner: +5492644893953
-📧 Email: developer.wilker.ofc@gmail.com
-
-⚡ _Bot en funcionamiento_`
-    
-    await conn.sendMessage(m.chat, {
-      text: simpleMenu,
-      buttons: [
-        { buttonId: '.code', buttonText: { displayText: '🐦‍🔥 SubBot' }, type: 1 },
-        { buttonId: '.owner', buttonText: { displayText: '👑 Owner' }, type: 1 },
-        { buttonId: '.donar', buttonText: { displayText: '💸 Donar' }, type: 1 }
-      ]
-    }, { quoted: m })
+    conn.reply(m.chat, '❎ Lo sentimos, el menú tiene un error.', m)
   }
 }
 
