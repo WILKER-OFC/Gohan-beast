@@ -122,7 +122,7 @@ const handler = async (m, { conn, usedPrefix: _p }) => {
 
     // Botones mejorados
     const buttons = [
-      { buttonId: '.code', buttonText: { displayText: '🐦‍🔥 Crear SubBot' }, type: 1 },
+      { buttonId: '.code', buttonText: { displayText: '🐦‍🔥 Ser SubBot' }, type: 1 },
       { buttonId: '.owner', buttonText: { displayText: '👑 Propietario' }, type: 1 },
       { buttonId: '.donar', buttonText: { displayText: '💸 Donar' }, type: 1 }
     ]
