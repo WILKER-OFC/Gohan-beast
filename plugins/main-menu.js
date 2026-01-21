@@ -26,7 +26,7 @@ const tags = {
 const defaultMenu = {
   before: `
 ╔══════════════════╗
-║🐉 *GOHAŃ BEAST BOT* 🌀    ║
+║🐉 *GOHAŃ BEAST BOT* 🌀   ║
 ╠══════════════════╣
 ║ Hola~ soy %botname (◕ᴗ◕✿)
 ║ *%name*, %greeting jeje
