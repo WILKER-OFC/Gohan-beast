@@ -53,45 +53,30 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
 
 ✧━『 *GOHAN BEAS BOT* 』━✧
 ⚡ 𝑷𝒐𝒘𝒆𝒓𝒆𝒅 𝒃𝒚 WILKER OFC ⚡
+
+🎵 Descargando audio...
 `
 
     const thumb = (await conn.getFile(thumbnail)).data
+    
+    // Enviar primero la info del video
     await conn.sendMessage(
       m.chat,
       {
         image: thumb,
         caption,
         footer: "⚡ Gohan — Descargas rápidas ⚡",
-        buttons: [
-          { buttonId: `shadowaudio ${url}`, buttonText: { displayText: "🎵 𝘿𝙚𝙨𝙘𝙖𝙧𝙜𝙖𝙧 𝘼𝙪𝙙𝙞𝙤" }, type: 1 },
-          { buttonId: `shadowvideo ${url}`, buttonText: { displayText: "🎬 𝘿𝙚𝙨𝙘𝙖𝙧𝙜𝙖𝙧 𝙑𝙞𝙙𝙚𝙤" }, type: 1 }
-        ],
         headerType: 4
       },
       { quoted: fkontak }
     )
 
-    await m.react("✅")
+    // Descargar y enviar el audio automáticamente
+    await downloadAudio(conn, m, url)
+
   } catch (e) {
     m.reply("❌ Error: " + e.message)
     m.react("⚠️")
-  }
-}
-
-handler.before = async (m, { conn }) => {
-  const selected = m?.message?.buttonsResponseMessage?.selectedButtonId
-  if (!selected) return
-
-  const parts = selected.split(" ")
-  const cmd = parts.shift()
-  const url = parts.join(" ")
-
-  if (cmd === "shadowaudio") {
-    return downloadMedia(conn, m, url, "mp3")
-  }
-
-  if (cmd === "shadowvideo") {
-    return downloadMedia(conn, m, url, "mp4")
   }
 }
 
@@ -100,55 +85,60 @@ const fetchBuffer = async (url) => {
   return await response.buffer()
 }
 
-const downloadMedia = async (conn, m, url, type) => {
+const downloadAudio = async (conn, m, url) => {
   try {
-    const msg = type === "mp3"
-      ? "🎵 Descargando audio..."
-      : "🎬 Descargando video..."
+    const sent = await conn.sendMessage(m.chat, { text: "🎵 Descargando audio, por favor espera..." }, { quoted: m })
 
-    const sent = await conn.sendMessage(m.chat, { text: msg }, { quoted: m })
-
-    const apiUrl = type === "mp3"
-      ? `https://api-adonix.ultraplus.click/download/ytaudio?url=${encodeURIComponent(url)}&apikey=SHADOWKEYBOTMD`
-      : `https://api-adonix.ultraplus.click/download/ytvideo?url=${encodeURIComponent(url)}&apikey=SHADOWKEYBOTMD`
+    const apiUrl = `https://api-adonix.ultraplus.click/download/ytaudio?url=${encodeURIComponent(url)}&apikey=SHADOWKEYBOTMD`
 
     const r = await fetch(apiUrl)
     const data = await r.json()
 
-    if (!data?.status || !data?.data?.url) return m.reply("🚫 No se pudo descargar el archivo.")
-
-    const fileUrl = data.data.url
-    const fileTitle = cleanName(data.data.title || "video")
-
-    if (type === "mp3") {
-      const audioBuffer = await fetchBuffer(fileUrl)
+    if (!data?.status || !data?.data?.url) {
       await conn.sendMessage(
         m.chat,
-        { audio: audioBuffer, mimetype: "audio/mpeg", fileName: fileTitle + ".mp3" },
-        { quoted: m }
+        { text: "🚫 No se pudo descargar el audio.", edit: sent.key }
       )
-    } else {
-      await conn.sendMessage(
-        m.chat,
-        { video: { url: fileUrl }, mimetype: "video/mp4", fileName: fileTitle + ".mp4" },
-        { quoted: m }
-      )
+      return
     }
 
+    const fileUrl = data.data.url
+    const fileTitle = cleanName(data.data.title || "audio")
+
+    // Descargar el buffer del audio
+    const audioBuffer = await fetchBuffer(fileUrl)
+    
+    // Enviar el audio
     await conn.sendMessage(
       m.chat,
-      { text: `✅ Descarga completada\n\n🎼 Título: ${fileTitle}`, edit: sent.key }
+      { 
+        audio: audioBuffer, 
+        mimetype: "audio/mpeg", 
+        fileName: fileTitle + ".mp3",
+        caption: `✅ Audio descargado\n\n🎼 Título: ${fileTitle}` 
+      },
+      { quoted: m }
+    )
+
+    // Actualizar mensaje de estado
+    await conn.sendMessage(
+      m.chat,
+      { text: `✅ Audio descargado con éxito`, edit: sent.key }
     )
 
     await m.react("✅")
   } catch (e) {
     console.error(e)
-    m.reply("❌ Error: " + e.message)
-    m.react("💀")
+    await conn.sendMessage(
+      m.chat,
+      { text: "❌ Error al descargar el audio: " + e.message }
+    )
+    await m.react("💀")
   }
 }
 
 const cleanName = (name) => name.replace(/[^\w\s-_.]/gi, "").substring(0, 50)
+
 const formatViews = (views) => {
   if (views === undefined || views === null) return "No disponible"
   if (views >= 1000000000) return `${(views / 1000000000).toFixed(1)}B`
@@ -157,7 +147,7 @@ const formatViews = (views) => {
   return views.toString()
 }
 
-handler.command = ["play", "yt", "ytsearch"]
+handler.command = ["play", "yt",]
 handler.tags = ["downloader"]
 handler.register = false
 
