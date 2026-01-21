@@ -61,11 +61,11 @@ const handler = async (m, { conn, usedPrefix: _p }) => {
     // Cambiar nombre del bot a "Gohan Beast Bot"
     let nombreBot = 'Gohan Beast Bot'
     // Usar la imagen proporcionada como banner por defecto
-    let bannerFinal = 'https://iili.io/fgy4Anj.jpg'
+    let bannerFinal = 'https://d.uguu.se/FLmbfoqM.jpeg'
 
     const botActual = conn.user?.jid?.split('@')[0].replace(/\D/g, '')
     const configPath = join('./JadiBots', botActual, 'config.json')
-    
+
     // Verificar si el archivo de configuración existe y leerlo
     if (fs.existsSync(configPath)) {
       try {
@@ -130,8 +130,10 @@ const handler = async (m, { conn, usedPrefix: _p }) => {
     const isURL = /^https?:\/\//i.test(bannerFinal)
     const imageContent = isURL ? { image: { url: bannerFinal } } : { image: fs.readFileSync(bannerFinal) }
 
-    // Botón agregado
+    // Botones agregados (3 botones como pediste)
     const buttons = [
+      { buttonId: '.owner', buttonText: { displayText: '👑 Propietario' }, type: 1 },
+      { buttonId: '.allmenu', buttonText: { displayText: '📋 Lista de Comandos' }, type: 1 },
       { buttonId: '.code', buttonText: { displayText: '🐦‍🔥 Ser SubBot' }, type: 1 }
     ]
 
