@@ -76,6 +76,6 @@ const handler = async (m, { conn, text, usedPrefix: prefijo }) => {
 handler.help = ['play *<texto>*'];
 handler.tags = ['dl'];
 handler.command = ['play'];
-handler.register = true;
+handler.register = false;
 
 export default handler;
