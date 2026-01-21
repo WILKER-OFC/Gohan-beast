@@ -22,26 +22,20 @@ const tags = {
 
 const defaultMenu = {
   before: `
-⚡ *GOHAN BEAST BOT* ⚡
-*( %tipo )*
+🌤 Hola, soy %botname *( %tipo )*
+*%name*, %greeting
 
-👋 *Hola, %name!*
-${'%greeting'}
+🪪 *CANAL :* https://whatsapp.com/channel/0029Vb724SDHltY4qGU9QS3S
 
-🪪 *INFORMACIÓN:*
-📅 Fecha: *%date*
-⏱️ Actividad: *%uptime*
-📊 Nivel: *%level*
-🎯 Exp: *%exp/%maxexp*
-💎 Limite: *%limit*
-
+> 🥮 Fecha = *%date*
+> 🍿 Actividad = *%uptime*
 %readmore
 `.trimStart(),
 
-  header: '\n╭───「 *%category* 」',
-  body: '│ ✦ %cmd %islimit %isPremium',
-  footer: '╰─────────────',
-  after: '\n\n*⚡ Creado por WILKER OFC. ⚡*',
+  header: '\n\`%category 🥞\`',
+  body: '\`🧃\` *%cmd* %islimit %isPremium',
+  footer: '',
+  after: '\n🍂 Creado por WILKER OFC.',
 }
 
 const handler = async (m, { conn, usedPrefix: _p }) => {
@@ -53,70 +47,58 @@ const handler = async (m, { conn, usedPrefix: _p }) => {
     const d = new Date(Date.now() + 3600000)
     const date = d.toLocaleDateString('es', { day: 'numeric', month: 'long', year: 'numeric' })
 
-    // Obtener comandos disponibles
-    let help = []
-    for (let plugin of Object.values(global.plugins)) {
-      if (!plugin || plugin.disabled) continue
-      
-      if (typeof plugin.help === 'string') {
-        plugin.help = [plugin.help]
-      }
-      
-      if (typeof plugin.tags === 'string') {
-        plugin.tags = [plugin.tags]
-      }
-      
-      help.push({
-        help: plugin.help || [],
-        tags: plugin.tags || [],
-        prefix: 'customPrefix' in plugin,
-        limit: plugin.limit,
-        premium: plugin.premium,
-      })
+    const help = Object.values(global.plugins)
+      .filter(p => !p.disabled)
+      .map(p => ({
+        help: Array.isArray(p.help) ? p.help : [p.help],
+        tags: Array.isArray(p.tags) ? p.tags : [p.tags],
+        prefix: 'customPrefix' in p,
+        limit: p.limit,
+        premium: p.premium,
+      }))
+
+    // --- MODO GOHAN BEAST ACTIVADO ---
+    let nombreBot = 'Gohan Beast Bot' // Nombre fijo
+    let bannerFinal = 'https://d.uguu.se/FLmbfoqM.jpeg' // Imagen fija
+
+    // Verificar si existe configuración local y mantener solo la imagen por defecto
+    const botActual = conn.user?.jid?.split('@')[0].replace(/\D/g, '')
+    const configPath = join('./JadiBots', botActual, 'config.json')
+    if (fs.existsSync(configPath)) {
+      try {
+        const config = JSON.parse(fs.readFileSync(configPath))
+        // Solo usamos la configuración local para el nombre si no hay override
+        if (!global.gohanMode) {
+          if (config.name) nombreBot = config.name
+          if (config.banner) bannerFinal = config.banner
+        }
+      } catch {}
     }
 
-    // Configuración fija para Gohan Beast Bot
-    let nombreBot = 'Gohan Beast Bot'
-    let bannerFinal = 'https://d.uguu.se/FLmbfoqM.jpeg'
+    // Activar modo Gohan Beast globalmente
+    global.gohanMode = true
+    global.namebot = nombreBot
 
-    const tipo = conn.user.jid === global.conn.user.jid ? '🆅 Principal' : '🅱 SubBot'
+    const tipo = conn.user.jid === global.conn.user.jid ? '𝗣𝗿𝗶𝗻𝗰𝗶𝗽𝗮𝗹 🆅' : '𝗦𝘂𝗯𝗕𝗼𝘁 🅱'
     const menuConfig = conn.menu || defaultMenu
 
-    // Construir el texto del menú
-    let text = menuConfig.before
-    
-    // Agregar categorías con comandos
-    for (let tag of Object.keys(tags)) {
-      let categoryCommands = []
-      
-      for (let menu of help) {
-        if (menu.tags && menu.tags.includes(tag) && menu.help && menu.help.length > 0) {
-          for (let helpText of menu.help) {
-            let cmd = menu.prefix ? helpText : _p + helpText
-            let limitText = menu.limit ? ' 🔸' : ''
-            let premiumText = menu.premium ? ' 💎' : ''
-            
-            categoryCommands.push(
-              menuConfig.body
-                .replace('%cmd', cmd)
-                .replace('%islimit', limitText)
-                .replace('%isPremium', premiumText)
-            )
-          }
-        }
-      }
-      
-      if (categoryCommands.length > 0) {
-        text += '\n' + menuConfig.header.replace('%category', tags[tag])
-        text += '\n' + categoryCommands.join('\n')
-        text += '\n' + menuConfig.footer
-      }
-    }
-    
-    text += menuConfig.after
+    const _text = [
+      menuConfig.before,
+      ...Object.keys(tags).map(tag => {
+        const cmds = help
+          .filter(menu => menu.tags?.includes(tag))
+          .map(menu => menu.help.map(h => 
+            menuConfig.body
+              .replace(/%cmd/g, menu.prefix ? h : `${_p}${h}`)
+              .replace(/%islimit/g, menu.limit ? '⭐' : '')
+              .replace(/%isPremium/g, menu.premium ? '🪪' : '')
+          ).join('\n')).join('\n')
+        return [menuConfig.header.replace(/%category/g, tags[tag]), cmds, menuConfig.footer].join('\n')
+      }),
+      menuConfig.after
+    ].join('\n')
 
-    // Reemplazar variables
-    const replacements = {
+    const replace = {
       '%': '%',
       p: _p,
       botname: nombreBot,
@@ -125,37 +107,46 @@ const handler = async (m, { conn, usedPrefix: _p }) => {
       maxexp: xp,
       totalexp: exp,
       xp4levelup: max - exp,
-      level: level,
-      limit: limit,
-      name: name,
-      date: date,
+      level,
+      limit,
+      name,
+      date,
       uptime: clockString(process.uptime() * 1000),
-      tipo: tipo,
+      tipo,
       readmore: readMore,
-      greeting: greeting,
+      greeting,
     }
 
-    // Aplicar reemplazos
-    for (let [key, value] of Object.entries(replacements)) {
-      text = text.split(`%${key}`).join(value)
-    }
+    const text = _text.replace(
+      new RegExp(`%(${Object.keys(replace).sort((a, b) => b.length - a.length).join('|')})`, 'g'),
+      (_, name) => String(replace[name])
+    )
 
-    // Enviar menú con imagen
+    const isURL = /^https?:\/\//i.test(bannerFinal)
+    const imageContent = isURL ? { image: { url: bannerFinal } } : { image: fs.readFileSync(bannerFinal) }
+
+    // --- BOTONES ORGANIZADOS COMO EN LA IMAGEN ---
+    const buttons = [
+      { buttonId: '.serbot', buttonText: { displayText: '🐳 Crear SubBot' }, type: 1 },
+      { buttonId: '.owner', buttonText: { displayText: '🐳 Propietario' }, type: 1 },
+      { buttonId: '.donar', buttonText: { displayText: '🐳 Donar' }, type: 1 }
+    ]
+
     await conn.sendMessage(
       m.chat,
       { 
-        image: { url: bannerFinal }, 
+        ...imageContent, 
         caption: text.trim(), 
-        footer: '⚡ Gohan Beast Bot - Menu de Comandos ⚡', 
-        headerType: 4 
+        footer: `© ${nombreBot} - Todos los derechos reservados`, 
+        buttons, 
+        headerType: 4, 
+        mentionedJid: conn.parseMention(text) 
       },
       { quoted: m }
     )
-    
   } catch (e) {
     console.error('❌ Error en el menú:', e)
-    // Mensaje de error más informativo
-    await conn.reply(m.chat, `❌ Error en el menú:\n${e.message}\n\nIntenta reiniciar el bot o contacta al owner.`, m)
+    conn.reply(m.chat, '❎ Lo sentimos, el menú tiene un error.', m)
   }
 }
 
