@@ -132,7 +132,7 @@ const handler = async (m, { conn, usedPrefix: _p }) => {
 
     // Botón agregado
     const buttons = [
-      { buttonId: '.code', buttonText: { displayText: '🐦‍🔥 Ser SubBot' }, type: 1 }
+      { buttonId: '.owner', buttonText: { displayText: '🖥️ Propietario' }, type: 1 }
     ]
 
     // Enviar el mensaje con el menú
