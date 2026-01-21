@@ -18,9 +18,9 @@ let crm4 = "IF9hdXRvcmVzcG9uZGVyLmpzIGluZm8tYm90Lmpz"
 let drm1 = ""
 let drm2 = ""
 let rtx = `
-🎋 *VINCULACIÓN POR QR GOHAN BEAST*
+🖥️ *VINCULACIÓN POR QR GOHAN BEAST*
 
-📌 *Pasos para vincular Gohan beast*:
+👾 *Pasos para vincularte a Gohan*:
 1️⃣ Abre 𝗪𝗵𝗮𝘁𝘀𝗔𝗽𝗽 en tu teléfono  
 2️⃣ Pulsa ⋮ *Más opciones* → *Dispositivos vinculados*  
 3️⃣ Presiona *"Vincular un dispositivo"*  
@@ -28,18 +28,13 @@ let rtx = `
 `.trim()
 
 let rtx2 = `
-🔵 *VINCULACIÓN POR CÓDIGO DE 8 DÍGITOS*
+🖥️ *VINCULACIÓN POR CÓDIGO DE 8 DÍGITOS*
 
-📌 *Pasos para vincular Gohan beast*:
+👾 *Pasos para vincularte a Gohan*:
 1️⃣ Abre 𝗪𝗵𝗮𝘁𝘀𝗔𝗽𝗽 en tu teléfono  
 2️⃣ Pulsa ⋮ *Más opciones* → *Dispositivos vinculados*  
 3️⃣ Presiona *"Vincular un dispositivo"*  
 4️⃣ Selecciona *"Con número"* e introduce el código mostrado  
-
-⚠️ 𝗜𝗺𝗽𝗼𝗿𝘁𝗮𝗻𝘁𝗲:  
-- Algunos grupos pueden fallar al generar el código  
-- Recomendado: Solicítalo por privado al bot  
-⏳ El código es válido solo para este número y expira en pocos segundos.
 `.trim()
 
 const __filename = fileURLToPath(import.meta.url)
