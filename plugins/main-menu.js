@@ -28,11 +28,12 @@ const defaultMenu = {
 👋 *Hola, %name!*
 ${'%greeting'}
 
-📌 *Mi nombre:* Gohan Beast Bot
-📅 *Fecha:* %date
-⏱️ *Actividad:* %uptime
-📊 *Nivel:* %level
-🎯 *Exp:* %exp/%maxexp
+🪪 *INFORMACIÓN:*
+📅 Fecha: *%date*
+⏱️ Actividad: *%uptime*
+📊 Nivel: *%level*
+🎯 Exp: *%exp/%maxexp*
+💎 Limite: *%limit*
 
 %readmore
 `.trimStart(),
@@ -52,15 +53,27 @@ const handler = async (m, { conn, usedPrefix: _p }) => {
     const d = new Date(Date.now() + 3600000)
     const date = d.toLocaleDateString('es', { day: 'numeric', month: 'long', year: 'numeric' })
 
-    const help = Object.values(global.plugins)
-      .filter(p => !p.disabled)
-      .map(p => ({
-        help: Array.isArray(p.help) ? p.help : [p.help],
-        tags: Array.isArray(p.tags) ? p.tags : [p.tags],
-        prefix: 'customPrefix' in p,
-        limit: p.limit,
-        premium: p.premium,
-      }))
+    // Obtener comandos disponibles
+    let help = []
+    for (let plugin of Object.values(global.plugins)) {
+      if (!plugin || plugin.disabled) continue
+      
+      if (typeof plugin.help === 'string') {
+        plugin.help = [plugin.help]
+      }
+      
+      if (typeof plugin.tags === 'string') {
+        plugin.tags = [plugin.tags]
+      }
+      
+      help.push({
+        help: plugin.help || [],
+        tags: plugin.tags || [],
+        prefix: 'customPrefix' in plugin,
+        limit: plugin.limit,
+        premium: plugin.premium,
+      })
+    }
 
     // Configuración fija para Gohan Beast Bot
     let nombreBot = 'Gohan Beast Bot'
@@ -69,31 +82,41 @@ const handler = async (m, { conn, usedPrefix: _p }) => {
     const tipo = conn.user.jid === global.conn.user.jid ? '🆅 Principal' : '🅱 SubBot'
     const menuConfig = conn.menu || defaultMenu
 
-    const _text = [
-      menuConfig.before,
-      ...Object.keys(tags).map(tag => {
-        const cmds = help
-          .filter(menu => menu.tags?.includes(tag))
-          .map(menu => menu.help.map(h => 
-            menuConfig.body
-              .replace(/%cmd/g, menu.prefix ? h : `${_p}${h}`)
-              .replace(/%islimit/g, menu.limit ? ' 🔸[LIMIT]' : '')
-              .replace(/%isPremium/g, menu.premium ? ' 💎[PREMIUM]' : '')
-          ).join('\n')).join('\n')
-        
-        if (cmds.trim()) {
-          return [
-            menuConfig.header.replace(/%category/g, tags[tag]),
-            cmds,
-            menuConfig.footer
-          ].join('\n')
+    // Construir el texto del menú
+    let text = menuConfig.before
+    
+    // Agregar categorías con comandos
+    for (let tag of Object.keys(tags)) {
+      let categoryCommands = []
+      
+      for (let menu of help) {
+        if (menu.tags && menu.tags.includes(tag) && menu.help && menu.help.length > 0) {
+          for (let helpText of menu.help) {
+            let cmd = menu.prefix ? helpText : _p + helpText
+            let limitText = menu.limit ? ' 🔸' : ''
+            let premiumText = menu.premium ? ' 💎' : ''
+            
+            categoryCommands.push(
+              menuConfig.body
+                .replace('%cmd', cmd)
+                .replace('%islimit', limitText)
+                .replace('%isPremium', premiumText)
+            )
+          }
         }
-        return ''
-      }).filter(Boolean),
-      menuConfig.after
-    ].join('\n')
+      }
+      
+      if (categoryCommands.length > 0) {
+        text += '\n' + menuConfig.header.replace('%category', tags[tag])
+        text += '\n' + categoryCommands.join('\n')
+        text += '\n' + menuConfig.footer
+      }
+    }
+    
+    text += menuConfig.after
 
-    const replace = {
+    // Reemplazar variables
+    const replacements = {
       '%': '%',
       p: _p,
       botname: nombreBot,
@@ -102,46 +125,37 @@ const handler = async (m, { conn, usedPrefix: _p }) => {
       maxexp: xp,
       totalexp: exp,
       xp4levelup: max - exp,
-      level,
-      limit,
-      name,
-      date,
+      level: level,
+      limit: limit,
+      name: name,
+      date: date,
       uptime: clockString(process.uptime() * 1000),
-      tipo,
+      tipo: tipo,
       readmore: readMore,
-      greeting,
+      greeting: greeting,
     }
 
-    const text = _text.replace(
-      new RegExp(`%(${Object.keys(replace).sort((a, b) => b.length - a.length).join('|')})`, 'g'),
-      (_, name) => String(replace[name])
-    )
+    // Aplicar reemplazos
+    for (let [key, value] of Object.entries(replacements)) {
+      text = text.split(`%${key}`).join(value)
+    }
 
-    const isURL = /^https?:\/\//i.test(bannerFinal)
-    const imageContent = isURL ? { image: { url: bannerFinal } } : { image: fs.readFileSync(bannerFinal) }
-
-    // Botones mejorados
-    const buttons = [
-      { buttonId: '.code', buttonText: { displayText: '🐦‍🔥 Ser SubBot' }, type: 1 },
-      { buttonId: '.owner', buttonText: { displayText: '👑 Propietario' }, type: 1 },
-      { buttonId: '.donar', buttonText: { displayText: '💸 Donar' }, type: 1 }
-    ]
-
+    // Enviar menú con imagen
     await conn.sendMessage(
       m.chat,
       { 
-        ...imageContent, 
+        image: { url: bannerFinal }, 
         caption: text.trim(), 
-        footer: '⚡ Gohan Beast Bot - Todos los derechos reservados ⚡', 
-        buttons, 
-        headerType: 4, 
-        mentionedJid: conn.parseMention(text) 
+        footer: '⚡ Gohan Beast Bot - Menu de Comandos ⚡', 
+        headerType: 4 
       },
       { quoted: m }
     )
+    
   } catch (e) {
     console.error('❌ Error en el menú:', e)
-    conn.reply(m.chat, '❎ Lo sentimos, el menú tiene un error.', m)
+    // Mensaje de error más informativo
+    await conn.reply(m.chat, `❌ Error en el menú:\n${e.message}\n\nIntenta reiniciar el bot o contacta al owner.`, m)
   }
 }
 
