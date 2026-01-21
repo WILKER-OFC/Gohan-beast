@@ -1,111 +1,62 @@
-import speed from 'performance-now'
-import os from 'os'
 
-let handler = async (m, { conn, usedPrefix }) => {
+import speed from 'performance-now'
+
+let handler = async (m, { conn }) => {
   let timestamp = speed()
   
-  // Reacción inicial uwu
-  await m.react('🌀')
+  await m.react('⚡')
   
-  // Mensaje de carga kawaii
-  let sentMsg = await m.reply(`🌸 *Calculando poder Saiyan...* ⚡\n🌀 Cargando latencia del dojo...`)
+  let sentMsg = await m.reply(`🐉 *Activando Kamehameha...*`)
   
   let latency = speed() - timestamp
   
-  // Obtener info del sistema uwu
-  const cpu = os.cpus()[0]?.model || 'Desconocido'
-  const ramTotal = (os.totalmem() / 1024 / 1024 / 1024).toFixed(2)
-  const ramFree = (os.freemem() / 1024 / 1024 / 1024).toFixed(2)
-  const uptime = process.uptime()
-  
-  // Determinar estado según latencia >w<
-  let estado = ''
-  let emojiEstado = ''
-  let poderSaiyan = ''
+  // Velocidades Dragon Ball Z
+  let velocidadDBZ = ''
+  let ataqueDBZ = ''
+  let emojiDBZ = ''
   
   if (latency < 50) {
-    estado = '🐉 *ULTRA INSTINCT*'
-    emojiEstado = '✨'
-    poderSaiyan = 'Poder máximo alcanzado!'
+    velocidadDBZ = '🌀 *VELOCIDAD INSTANTÁNEA*'
+    ataqueDBZ = 'Instant Transmission de Goku'
+    emojiDBZ = '✨'
   } else if (latency < 150) {
-    estado = '⚡ *SUPER SAIYAN GOD*'
-    emojiEstado = '💫'
-    poderSaiyan = 'Poder divino activado'
+    velocidadDBZ = '⚡ *VELOCIDAD RELÁMPAGO*'
+    ataqueDBZ = 'Afterimage Technique'
+    emojiDBZ = '💫'
   } else if (latency < 300) {
-    estado = '🔥 *SUPER SAIYAN*'
-    emojiEstado = '🌟'
-    poderSaiyan = 'Transformación completa'
+    velocidadDBZ = '🔥 *VELOCIDAD SÓNICA*'
+    ataqueDBZ = 'Super Saiyan Speed'
+    emojiDBZ = '🌟'
   } else if (latency < 500) {
-    estado = '💪 *SAIYAN BASE*'
-    emojiEstado = '🌸'
-    poderSaiyan = 'Poder estable'
+    velocidadDBZ = '💨 *VELOCIDAD NIMBUS*'
+    ataqueDBZ = 'Flying Nimbus Cloud'
+    emojiDBZ = '☁️'
   } else {
-    estado = '⚠️ *SAIYAN NOVATO*'
-    emojiEstado = '🌱'
-    poderSaiyan = 'Necesita entrenamiento'
+    velocidadDBZ = '🐌 *VELOCIDAD TORTUGA*'
+    ataqueDBZ = 'Master Roshi Walking'
+    emojiDBZ = '🐢'
   }
   
-  // Formatear uptime kawaii
-  const days = Math.floor(uptime / 86400)
-  const hours = Math.floor((uptime % 86400) / 3600)
-  const minutes = Math.floor((uptime % 3600) / 60)
-  const seconds = Math.floor(uptime % 60)
-  
-  const uptimeStr = `${days}d ${hours}h ${minutes}m ${seconds}s`
-  
-  // Crear respuesta uwu
   const result = `
-╔═══════════════════════════╗
-║     🐉 *PING GOHAN BEAST* ⚡    ║
-╠═══════════════════════════╣
-║ ${emojiEstado} ${estado}
-║ 
-║ 📊 *LATENCIA:* ${latency.toFixed(2)}ms
-║ 🌀 *PODER SAIYAN:* ${poderSaiyan}
-╠═══════════════════════════╣
-║      ⚙️ *ESTADO DEL DOJO*      
-╠═══════════════════════════╣
-║ 🧠 *CPU:* ${cpu.split(' ')[0]}...
-║ 💾 *RAM:* ${ramFree}GB / ${ramTotal}GB
-║ ⏱️ *UPTIME:* ${uptimeStr}
-║ 📱 *ACTIVO:* ${global.db.data.stats ? Object.keys(global.db.data.stats).length : 0} comandos
-╠═══════════════════════════╣
-║ 🐉 *TRANSFORMACIÓN:* Beast Mode
-║ ⚡ *ENERGÍA:* ${global.moneda || 'Saiyan'} al 100%
-║ 💫 *ESTADO:* Conectado y listo
-╚═══════════════════════════╝
+${emojiDBZ} *「 PING BEAST 」* ${emojiDBZ}
 
-*¡El poder Saiyan fluye en mí!* 🌸✨
+${velocidadDBZ}
+📊 *Tiempo:* ${latency.toFixed(0)}ms
+🎯 *Ataque:* ${ataqueDBZ}
+
+⚡ *Gohan Beast* - ¡Conectado!
+🐉 *By Wilker*
 `
   
-  // Enviar respuesta owo
   await conn.sendMessage(m.chat, {
     text: result,
-    edit: sentMsg.key,
-    mentions: [m.sender]
-  }, { quoted: m })
+    edit: sentMsg.key
+  })
   
-  // Reacciones finales uwu
-  await m.react('⚡')
   await m.react('✅')
-  
-  // Efecto de sonido kawaii
-  setTimeout(async () => {
-    await conn.sendMessage(m.chat, {
-      text: '_*¡POW!*_ 💥 _*¡BAM!*_ 👊 _*¡KAMEHAMEHA!*_ 🌀'
-    })
-  }, 500)
 }
 
-// Info del comando >w<
-handler.help = ['ping', 'latencia', 'beast', 'poder']
-handler.tags = ['info', 'beast', 'diagnóstico']
-handler.command = ['ping', 'p', 'latencia', 'beast', 'gohan', 'poder', 'speed']
-handler.limit = false
-handler.premium = false
-handler.register = false
-
-// Alias kawaii
-handler.alias = ['p', 'beastping', 'gohanpower', 'saiyanping', 'latency']
-
+handler.help = ['ping', 'velocidad', 'speed']
+handler.tags = ['beast', 'info']
+handler.command = ['ping', 'p', 'velocidad', 'speed', 'beast']
 export default handler
