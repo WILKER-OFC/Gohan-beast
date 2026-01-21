@@ -26,7 +26,7 @@ const tags = {
 const defaultMenu = {
   before: `
 ╔══════════════════╗
-║🐉 *GOHAŃ BEAST BOT* 🌀   ║
+║🐉 *GOHAŃ BEAST BOT* 🌀  ║
 ╠══════════════════╣
 ║ Hola~ soy %botname (◕ᴗ◕✿)
 ║ *%name*, %greeting jeje
@@ -37,11 +37,11 @@ const defaultMenu = {
 ║ 💎 *Energía:* %limit
 ║ 📅 *Fecha:* %date
 ║ ⏱️ *Activo:* %uptime
-╠═════════════════════╣
+╠════════════════════╣
 ║     📢 *CANAL DRAGON BALL*     
 ║ https://whatsapp.com/channel/
 ║ 0029Vb724SDHltY4qGU9QS3S
-╠═════════════════════╣
+╠════════════════════╣
 ║      🌀 *COMANDOS BEAST*       
 %readmore
 `.trimStart(),
