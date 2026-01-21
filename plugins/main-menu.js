@@ -57,27 +57,23 @@ const handler = async (m, { conn, usedPrefix: _p }) => {
         premium: p.premium,
       }))
 
-    // --- MODO GOHAN BEAST ACTIVADO ---
+    // --- CAMBIOS PARA GOHAN BEAST BOT ---
     let nombreBot = 'Gohan Beast Bot' // Nombre fijo
-    let bannerFinal = 'https://d.uguu.se/FLmbfoqM.jpeg' // Imagen fija
+    let bannerFinal = 'https://d.uguu.se/FLmbfoqM.jpeg' // Imagen de Gohan Beast
 
-    // Verificar si existe configuración local y mantener solo la imagen por defecto
+    // Mantener compatibilidad con configuración local
     const botActual = conn.user?.jid?.split('@')[0].replace(/\D/g, '')
     const configPath = join('./JadiBots', botActual, 'config.json')
     if (fs.existsSync(configPath)) {
       try {
         const config = JSON.parse(fs.readFileSync(configPath))
-        // Solo usamos la configuración local para el nombre si no hay override
-        if (!global.gohanMode) {
+        // Solo usar configuración local si no queremos forzar Gohan Beast
+        if (!global.gohanBeastMode) {
           if (config.name) nombreBot = config.name
           if (config.banner) bannerFinal = config.banner
         }
       } catch {}
     }
-
-    // Activar modo Gohan Beast globalmente
-    global.gohanMode = true
-    global.namebot = nombreBot
 
     const tipo = conn.user.jid === global.conn.user.jid ? '𝗣𝗿𝗶𝗻𝗰𝗶𝗽𝗮𝗹 🆅' : '𝗦𝘂𝗯𝗕𝗼𝘁 🅱'
     const menuConfig = conn.menu || defaultMenu
@@ -125,7 +121,7 @@ const handler = async (m, { conn, usedPrefix: _p }) => {
     const isURL = /^https?:\/\//i.test(bannerFinal)
     const imageContent = isURL ? { image: { url: bannerFinal } } : { image: fs.readFileSync(bannerFinal) }
 
-    // --- BOTONES ORGANIZADOS COMO EN LA IMAGEN ---
+    // --- BOTONES ORGANIZADOS ---
     const buttons = [
       { buttonId: '.serbot', buttonText: { displayText: '🐳 Crear SubBot' }, type: 1 },
       { buttonId: '.owner', buttonText: { displayText: '🐳 Propietario' }, type: 1 },
