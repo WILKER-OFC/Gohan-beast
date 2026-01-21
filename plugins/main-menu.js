@@ -27,15 +27,15 @@ const defaultMenu = {
 
 🪪 *CANAL :* https://whatsapp.com/channel/0029Vb724SDHltY4qGU9QS3S
 
-> 🥮 Fecha = *%date*
+> 🔵 Fecha = *%date*
 > 🍿 Actividad = *%uptime*
 %readmore
 `.trimStart(),
 
-  header: '\n\`%category 🥞\`',
-  body: '\`🧃\` *%cmd* %islimit %isPremium',
+  header: '\n\`%category 👾\`',
+  body: '\`🖥️\` *%cmd* %islimit %isPremium',
   footer: '',
-  after: '\n🍂 Creado por WILKER OFC.',
+  after: '\n🚀 Creado por WILKER OFC.',
 }
 
 const handler = async (m, { conn, usedPrefix: _p }) => {
@@ -57,21 +57,16 @@ const handler = async (m, { conn, usedPrefix: _p }) => {
         premium: p.premium,
       }))
 
-    // --- CAMBIOS PARA GOHAN BEAST BOT ---
-    let nombreBot = 'Gohan Beast Bot' // Nombre fijo
-    let bannerFinal = 'https://d.uguu.se/FLmbfoqM.jpeg' // Imagen de Gohan Beast
+    let nombreBot = global.namebot || 'Bot'
+    let bannerFinal = './storage/img/menu.jpg'
 
-    // Mantener compatibilidad con configuración local
     const botActual = conn.user?.jid?.split('@')[0].replace(/\D/g, '')
     const configPath = join('./JadiBots', botActual, 'config.json')
     if (fs.existsSync(configPath)) {
       try {
         const config = JSON.parse(fs.readFileSync(configPath))
-        // Solo usar configuración local si no queremos forzar Gohan Beast
-        if (!global.gohanBeastMode) {
-          if (config.name) nombreBot = config.name
-          if (config.banner) bannerFinal = config.banner
-        }
+        if (config.name) nombreBot = config.name
+        if (config.banner) bannerFinal = config.banner
       } catch {}
     }
 
@@ -121,23 +116,14 @@ const handler = async (m, { conn, usedPrefix: _p }) => {
     const isURL = /^https?:\/\//i.test(bannerFinal)
     const imageContent = isURL ? { image: { url: bannerFinal } } : { image: fs.readFileSync(bannerFinal) }
 
-    // --- BOTONES ORGANIZADOS ---
+    // --- Botón agregado ---
     const buttons = [
-      { buttonId: '.serbot', buttonText: { displayText: '🐳 Crear SubBot' }, type: 1 },
-      { buttonId: '.owner', buttonText: { displayText: '🐳 Propietario' }, type: 1 },
-      { buttonId: '.donar', buttonText: { displayText: '🐳 Donar' }, type: 1 }
+      { buttonId: '.code', buttonText: { displayText: '🐦‍🔥 Ser SubBot' }, type: 1 }
     ]
 
     await conn.sendMessage(
       m.chat,
-      { 
-        ...imageContent, 
-        caption: text.trim(), 
-        footer: `© ${nombreBot} - Todos los derechos reservados`, 
-        buttons, 
-        headerType: 4, 
-        mentionedJid: conn.parseMention(text) 
-      },
+      { ...imageContent, caption: text.trim(), footer: '🦖 Menu de comandos.. ', buttons, headerType: 4, mentionedJid: conn.parseMention(text) },
       { quoted: m }
     )
   } catch (e) {
