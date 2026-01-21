@@ -23,11 +23,11 @@ let rtx = `
 🐉 *VINCULACIÓN GOHAN BEAST - CÓDIGO QR*
 
 📌 *Pasos para vincular:*
-🌀 Abre WhatsApp en tu teléfono  
-🌀 Toca ⋮ *Más opciones*  
-🌀 Selecciona *Dispositivos vinculados*  
-🌀 Pulsa *"Vincular un dispositivo"*  
-🌀 Escanea este código QR
+1️⃣ Abre WhatsApp en tu teléfono  
+2️⃣ Toca ⋮ *Más opciones*  
+3️⃣ Selecciona *Dispositivos vinculados*  
+4️⃣ Pulsa *"Vincular un dispositivo"*  
+5️⃣ Escanea este código QR
 
 ⚡ *Transformación Beast activada*
 🌀 *By: Wilker | Gohan Beast Bot*
@@ -36,13 +36,13 @@ let rtx = `
 let rtx2 = `
 🐉 *VINCULACIÓN GOHAN BEAST - CÓDIGO MANUAL*
 
-📌 *Pasos para vinculartr a Gohan beast bot:*
-🌀 Abre WhatsApp en tu teléfono  
-⚡ Toca ⋮ *Más opciones*  
-⚡ Selecciona *Dispositivos vinculados*  
-⚡ Pulsa *"Vincular un dispositivo"*  
-⚡ Selecciona *"Con número"*  
-⚡ Introduce el código de 8 dígitos
+📌 *Pasos para vincular:*
+1️⃣ Abre WhatsApp en tu teléfono  
+2️⃣ Toca ⋮ *Más opciones*  
+3️⃣ Selecciona *Dispositivos vinculados*  
+4️⃣ Pulsa *"Vincular un dispositivo"*  
+5️⃣ Selecciona *"Con número"*  
+6️⃣ Introduce el código de 8 dígitos
 
 ⚠️ *Importante:*  
 • El código es válido por 15 segundos  
@@ -169,10 +169,26 @@ export async function beastJadiBot(options) {
       
       if (qr && mcode) {
         let secret = await sock.requestPairingCode((m.sender.split`@`[0]))
-        secret = secret.match(/.{1,4}/g)?.join(" ")
+        secret = secret.match(/.{1,4}/g)?.join("-")
 
         txtCode = await conn.sendMessage(m.chat, {text : rtx2}, { quoted: m })
-        codeBot = await m.reply(`🐉 *CÓDIGO DE VINCULACIÓN*\n\n🔢 *${secret}*\n\n⏱️ Expira en 15 segundos`)
+        
+        // Mensaje con botón de copiar
+        codeBot = await conn.sendMessage(m.chat, {
+          text: `🐉 *CÓDIGO DE VINCULACIÓN*\n\n` +
+                `📱 *Código:* \`\`\`${secret}\`\`\`\n\n` +
+                `⏱️ *Expira en:* 15 segundos\n` +
+                `📋 *Toca para copiar:*`,
+          contextInfo: {
+            externalAdReply: {
+              title: "📋 COPIAR CÓDIGO",
+              body: "Toca y mantén presionado para copiar",
+              mediaType: 1,
+              thumbnail: await qrcode.toDataURL(secret),
+              sourceUrl: "https://whatsapp.com"
+            }
+          }
+        }, { quoted: m })
 
         console.log(`🌀 Código generado: ${secret}`)
       }
