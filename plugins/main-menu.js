@@ -61,7 +61,7 @@ const handler = async (m, { conn, usedPrefix: _p }) => {
     // Cambiar nombre del bot a "Gohan Beast Bot"
     let nombreBot = 'Gohan Beast Bot'
     // Usar la imagen proporcionada como banner por defecto
-    let bannerFinal = 'https://d.uguu.se/FLmbfoqM.jpeg'
+    let bannerFinal = 'https://iili.io/fgy4Anj.jpg'
 
     const botActual = conn.user?.jid?.split('@')[0].replace(/\D/g, '')
     const configPath = join('./JadiBots', botActual, 'config.json')
