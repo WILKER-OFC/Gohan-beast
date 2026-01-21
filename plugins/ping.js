@@ -103,7 +103,7 @@ handler.tags = ['info', 'beast', 'diagnóstico']
 handler.command = ['ping', 'p', 'latencia', 'beast', 'gohan', 'poder', 'speed']
 handler.limit = false
 handler.premium = false
-handler.register = true
+handler.register = false
 
 // Alias kawaii
 handler.alias = ['p', 'beastping', 'gohanpower', 'saiyanping', 'latency']
