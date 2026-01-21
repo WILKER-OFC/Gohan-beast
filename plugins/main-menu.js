@@ -1,376 +1,195 @@
-import fs from 'fs'
-import { getBotVisual } from '../subbotManager.js'
+import { promises } from 'fs'
+import { join } from 'path'
+import { xpRange } from '../lib/levelling.js'
 
-function formatUptime(totalSeconds = 0) {
-  const s = Math.max(0, Math.floor(Number(totalSeconds) || 0))
-  const d = Math.floor(s / 86400)
-  const h = Math.floor((s % 86400) / 3600)
-  const m = Math.floor((s % 3600) / 60)
-  const ss = s % 60
-  const parts = []
-  if (d) parts.push(`${d} dias`)
-  if (h || d) parts.push(`${h} horas`)
-  if (m || h || d) parts.push(`${m} minutos`)
-  parts.push(`${ss} segundos`)
-  return parts.join(' ')
+let tags = {
+  'main': 'Information',
+  'search': 'Search',
+  'game': 'Games',
+  'serbot': 'Sub-Bots',
+  'rpg': 'Rpg',
+  'rg': 'Registro',
+  'sticker': 'Sticker',
+  'img': 'Image',
+  'group': 'Groups',
+  'nable': 'On / Off', 
+  'premium': 'Premium',
+  'downloader': 'Download',
+  'tools': 'Tools',
+  'fun': 'Fun',
+  'nsfw': 'Nsfw', 
+  'cmd': 'Database',
+  'owner': 'Creador', 
+  'audio': 'Audios', 
+  'advanced': 'Avanzado',
 }
 
-function formatDateTimeChicago(date = new Date()) {
-  try {
-    const dtf = new Intl.DateTimeFormat('es-ES', {
-      timeZone: 'America/Chicago',
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-      hour12: false
-    })
-    return dtf.format(date)
-  } catch {
-    const pad = (n) => String(n).padStart(2, '0')
-    const y = date.getFullYear()
-    const mo = pad(date.getMonth() + 1)
-    const da = pad(date.getDate())
-    const hh = pad(date.getHours())
-    const mm = pad(date.getMinutes())
-    const ss = pad(date.getSeconds())
-    return `${da}/${mo}/${y} ${hh}:${mm}:${ss}`
-  }
+const defaultMenu = {
+  before: `
+  *─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─*
+
+“ Hola *%name* soy *Ai Hoshino*, %greeting ”
+
+╭── ︿︿︿︿︿ *⭒   ⭒   ⭒   ⭒   ⭒   ⭒*
+┊ ‹‹ *Hello* :: *%name*
+┊•*⁀➷ °⭒⭒⭒ *【 ✯ Starlights Team ✰ 】*
+╰─── ︶︶︶︶ ✰⃕  ⌇ *⭒ ⭒ ⭒*   ˚̩̥̩̥*̩̩͙✩
+┊🍬 [ *Modo* :: *Público*
+┊📚 [ *Baileys* :: *Multi Device*
+┊⏱ [ *Tiempo Activo* :: *%uptime*
+┊👤 [ *Usuarios* :: *%totalreg*
+╰─────────
+%readmore
+*─ׄ─ׅ─ׄ─⭒ L I S T A  -  M E N Ú S ⭒─ׄ─ׅ─ׄ─*
+`.trimStart(),
+  header: '╭── ︿︿︿︿︿ *⭒   ⭒   ⭒   ⭒   ⭒   ⭒*\n┊ ‹‹ *Category* :: *%category*\n┊•*⁀➷ °⭒⭒⭒ •*⁀➷ °⭒⭒⭒\n╰─── ︶︶︶︶ ✰⃕  ⌇ *⭒ ⭒ ⭒*   ˚̩̥̩̥*̩̩͙✩',
+    body: '│❄️⃟🎄┊%cmd %islimit %isPremium\n',
+   footer: '╰─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒\n',
+    after: `> [ ✰ ] ${textbot}`,
 }
 
-let handler = async (m, { conn }) => {
-  const from = m.key.remoteJid
-  const visual = getBotVisual(conn)
-
-  const bannerPath = visual?.banner
-  const bannerExists = bannerPath && fs.existsSync(bannerPath)
-  const identity = visual.isSubBot ? 'Sub-Bot' : 'Principal'
-
-  const nowText = formatDateTimeChicago(new Date())
-  const uptimeText = formatUptime(process.uptime())
-
-  const menuText = `
-「✿」¡Hola Soy \`${visual.name || globalThis.nombrebot || 'Bot'}\`! *${identity}*
-❍ *Fecha y hora:* *${nowText}*
-❑ *Uptime:* *${uptimeText}*
-
-❀ *Descargas & Búsquedas*
-> ✐ *.play*
-> ❀ Descarga audios de YouTube.
-> ✐ *.play2*
-> ❀ Descarga videos de YouTube.
-> ✐ *.mediafire*
-> ❀ Descarga archivos de mediafire solo con el link.
-> ✐ *.facebook*
-> ❀ Descarga videos de facebook.
-> ✐ *.tiktok*
-> ❀ Descarga videos de tiktok.
-> ✐ *.instagram*
-> ❀ Descarga videos de instagram.
-> ✐ *.ytsearch*
-> ❀ Busca videos por texto en YouTube.
-> ✐ *.pinterest*
-> ❀ Busca imágenes en pinterest.
-> ✐ *.wikipedia*
-> ❀ Busca lo que quieras en wikipedia.
-
-❀ *Inteligencia Artificial*
-> ✐ *.imgia*
-> ❀ Genera una imagen a partir de un prompt.
-> ✐ *.gemini*
-> ❀ Habla con el modelo gemini 2.5 flash.
-
-❀ *Sub-Bots*
-> ✐ *.code*
-> ❀ Hazte subbot.
-> ✐ *.setname*
-> ❀ Cambia el nombre de tu Socket.
-> ✐ *.setbanner*
-> ❀ Cambia la imagen de tu Socket.
-> ✐ *.setprefix*
-> ❀ Cambia el prefijo de tu Socket.
-> ✐ *.bots*
-> ❀ Mira los total subbots conectados.
-
-❀ *Random*
-> ✐ *.meme*
-> ❀ Envía un meme aleatorio en imagen.
-
-❀ *Utilidades*
-> 🜸 *.tourl*
-> ❀ Sube archivos y devuelve link.
-> ✐ *.s*
-> ❀ Crea un sticker desde imagen o video.
-> ✐ *.toimg*
-> ❀ Convierte un sticker a imagen.
-> ✐ *.tomp4*
-> ❀ Convierte un sticker animado en imagen.
-
-❀ *Reacciones Anime*
-> ✐ *.angry / *.enojado*
-> ✐ *.bath / *.bañarse*
-> ✐ *.bite / *.morder*
-> ✐ *.bleh / *.lengua*
-> ✐ *.blush / *.sonrojarse*
-> ✐ *.bored / *.aburrido*
-> ✐ *.clap / *.aplaudir*
-> ✐ *.coffee / *.cafe / *.café*
-> ✐ *.cry / *.llorar*
-> ✐ *.cuddle / *.acurrucarse*
-> ✐ *.dance / *.bailar*
-> ✐ *.drunk / *.borracho*
-> ✐ *.eat / *.comer*
-> ✐ *.facepalm / *.palmadacara*
-> ✐ *.happy / *.feliz*
-> ✐ *.hug / *.abrazar*
-> ✐ *.kill / *.matar*
-> ✐ *.kiss / *.muak*
-> ✐ *.laugh / *.reirse*
-> ✐ *.lick / *.lamer*
-> ✐ *.slap / *.bofetada*
-> ✐ *.sleep / *.dormir*
-> ✐ *.smoke / *.fumar*
-> ✐ *.spit / *.escupir*
-> ✐ *.step / *.pisar*
-> ✐ *.think / *.pensar*
-> ✐ *.love / *.enamorado / *.enamorada*
-> ✐ *.pat / *.palmadita / *.palmada*
-> ✐ *.poke / *.picar*
-> ✐ *.pout / *.pucheros*
-> ✐ *.punch / *.pegar / *.golpear*
-> ✐ *.preg / *.preñar / *.embarazar*
-> ✐ *.run / *.correr*
-> ✐ *.sad / *.triste*
-> ✐ *.scared / *.asustada / *.asustado*
-> ✐ *.seduce / *.seducir*
-> ✐ *.shy / *.timido / *.timida*
-> ✐ *.walk / *.caminar*
-> ✐ *.dramatic / *.drama*
-> ✐ *.kisscheek / *.beso*
-> ✐ *.wink / *.guiñar*
-> ✐ *.cringe / *.avergonzarse*
-> ✐ *.smug / *.presumir*
-> ✐ *.smile / *.sonreir*
-> ✐ *.highfive / *.5*
-> ✐ *.handhold / *.mano*
-> ✐ *.bully / *.bullying*
-> ✐ *.wave / *.hola / *.ola*
-
-❀ *Economía*
-> ✐ *.einfo / *.economyinfo*
-> ❀ Muestra tu info de economía (cooldowns + dinero).
-> ✐ *.daily*
-> ❀ Reclama tu recompensa diaria.
-> ✐ *.weekly*
-> ❀ Reclama tu recompensa semanal.
-> ✐ *.work / *.w*
-> ❀ Trabaja y gana dinero.
-> ✐ *.crime*
-> ❀ Haz un crimen y gana o pierde.
-> ✐ *.slut*
-> ❀ Turno nocturno (riesgo/recompensa).
-> ✐ *.slot <cantidad>*
-> ❀ Apuesta en la máquina.
-> ✐ *.beg*
-> ❀ Mendiga y gana un poco.
-> ✐ *.coinflip / *.flip <cantidad> [cara/cruz]*
-> ❀ Apuesta a cara o cruz.
-> ✐ *.roulette / *.rt <cantidad> <rojo/negro/verde>*
-> ❀ Ruleta rápida (verde paga más).
-> ✐ *.invest <cantidad>*
-> ❀ Invierte (cobra luego con collect).
-> ✐ *.collect*
-> ❀ Cobra tu inversión.
-> ✐ *.depositar / *.d <cantidad/all>*
-> ❀ Deposita dinero al banco.
-> ✐ *.retirar / *.withdraw <cantidad/all>*
-> ❀ Retira dinero del banco.
-> ✐ *.robar / *.rob @user*
-> ❀ Intenta robar a un usuario.
-> ✐ *.pay / *.givecoins @user <cantidad/all>*
-> ❀ Envía dinero a otro usuario.
-> ✐ *.bal / *.coins*
-> ❀ Mira tu balance.
-> ✐ *.baltop / *.economyboard [página]*
-> ❀ Top de usuarios con más dinero.
-
-❀ *Perfil*
-> ✐ *.perfil / *.profile*
-> ❀ Muestra tu perfil (o el de alguien mencionando / respondiendo).
-> ✐ *.setprofile*
-> ❀ Muestra las opciones para configurar tu perfil.
-> ✐ *.setbirth 01/01/2000* / *.delbirth*
-> ❀ Establece o borra tu cumpleaños.
-> ✐ *.setgenre hombre|mujer|otro* / *.delgenre*
-> ❀ Establece o borra tu género.
-> ✐ *.setdesc <texto>* / *.deldesc*
-> ❀ Establece o borra tu descripción.
-> ✐ *.pfp @user*
-> ❀ Muestra la foto de perfil de un usuario.
-
-❀ *Gacha*
-> ✐ *.rw / *.roll*
-> ❀ Tira una waifu (roll).
-> ✐ *.c / *.claim*
-> ❀ Reclama tu último roll.
-> ✐ *.ultimoroll*
-> ❀ Muestra tu último roll activo.
-> ✐ *.ginfo*
-> ❀ Tu información de gacha.
-> ✐ *.waifus / *.harem*
-> ❀ Mira tu inventario.
-> ✐ *.waifuinfo / *.charinfo <id|nombre>*
-> ❀ Información de una waifu.
-> ✐ *.charimage / *.charvideo <id|nombre>*
-> ❀ Ver media aleatoria del personaje.
-> ✐ *.buscarwaifu <texto>*
-> ❀ Busca por nombre u origen.
-> ✐ *.coleccion*
-> ❀ Resumen de tu colección.
-> ✐ *.market / *.haremshop [página]*
-> ❀ Mercado de waifus.
-> ✐ *.venderwaifu / *.sell <id> <precio>*
-> ❀ Pon una waifu en venta.
-> ✐ *.cancelarventa / *.removesale <id>*
-> ❀ Quita una waifu del mercado.
-> ✐ *.comprarwaifu / *.buychar <id>*
-> ❀ Compra del mercado.
-> ✐ *.regalar / *.givechar <id|nombre> @user*
-> ❀ Regala una waifu.
-> ✐ *.giveallharem @user*
-> ❀ Regala todo tu harem.
-> ✐ *.fav [id]*
-> ❀ Marca/ver tu waifu favorita.
-> ✐ *.favtop*
-> ❀ Top de waifus favoritas.
-> ✐ *.waifusboard [número]*
-> ❀ Top waifus por valor.
-> ✐ *.trade @user <tuID> / <suID>*
-> ❀ Intercambia waifus.
-> ✐ *.vote <id|nombre>*
-> ❀ Vota para subir valor.
-> ✐ *.setclaimmsg <texto> / *.delclaimmsg*
-> ❀ Personaliza el mensaje al reclamar.
-> ✐ *.delwaifu <id>*
-> ❀ Elimina una waifu de tu harem.
-> ✐ *.topwaifus*
-> ❀ Top coleccionistas.
-
-❀ *Gestión de Grupos*
-> ✐ *.welcome/antilink/avisos on/off*
-> ❀ Activa/desactiva los eventos en un grupo.
-> ✐ *.banchat / *.unbanchat*
-> ❀ Desactiva/activa el bot en este grupo.
-> ✐ *.linkgc*
-> ❀ Obtén el link de invitación del grupo.
-> ✐ *.tagall [mensaje]*
-> ❀ Menciona a todos los participantes.
-> ✐ *.kick*
-> ❀ Expulsa a un usuario del grupo.
-> ✐ *.promote*
-> ❀ Promueve a admin.
-> ✐ *.demote*
-> ❀ Degrada a miembro.
-> ✐ *.gp*
-> ❀ Abre o cierra el grupo.
-> ✐ *.setgpname <nombre>*
-> ❀ Cambia el nombre del grupo.
-> ✐ *.setgpdesc <texto>*
-> ❀ Cambia la descripción del grupo.
-> ✐ *.setwelcome <mensaje>*
-> ❀ Personaliza el mensaje de bienvenida.
-> ✐ *.setbye <mensaje>*
-> ❀ Personaliza el mensaje de despedida.
-
-❀ *Información*
-> ✐ *.menu*
-> ❀ Muestra este menú.
-> ✐ *.ping*
-> ❀ Muestra la velocidad de respuesta del bot.
-> ✐ *.report*
-> ❀ Informa de un error al creador.
-
-❀ *Dueño*
-> ✐ *.update*
-> ❀ Actualiza el bot desde Git.
-`.trim()
-
-  const { prepareWAMessageMedia, generateWAMessageFromContent } = await import('@whiskeysockets/baileys')
-
-  const contextInfo = {
-    forwardingScore: 999999,
-    isForwarded: true
-  }
-
-  let header = { title: '' }
-
+let handler = async (m, { conn, usedPrefix: _p, __dirname }) => {
   try {
-    if (bannerExists) {
-      const media = await prepareWAMessageMedia(
-        { image: fs.readFileSync(bannerPath) },
-        { upload: conn.waUploadToServer }
-      )
-      header = { hasMediaAttachment: true, imageMessage: media.imageMessage }
-    } else if (typeof bannerPath === 'string' && /^https?:\/\//i.test(bannerPath)) {
-      const media = await prepareWAMessageMedia(
-        { image: { url: bannerPath } },
-        { upload: conn.waUploadToServer }
-      )
-      header = { hasMediaAttachment: true, imageMessage: media.imageMessage }
-    }
-  } catch {
-    header = { title: '' }
-  }
-
-  const content = generateWAMessageFromContent(
-    from,
-    {
-      viewOnceMessage: {
-        message: {
-          interactiveMessage: {
-            header,
-            body: { text: menuText },
-            footer: { text: 'Hecho por *Ado* :D' },
-            contextInfo,
-            nativeFlowMessage: {
-              buttons: [
-                {
-                  name: 'cta_url',
-                  buttonParamsJson: JSON.stringify({
-                    display_text: '𝗛𝗮𝘇𝘁𝗲 𝗦𝘂𝗯𝗕𝗼𝘁',
-                    url: 'https://meow.hostrta.win'
-                  })
-                },
-                {
-                  name: 'cta_url',
-                  buttonParamsJson: JSON.stringify({
-                    display_text: '𝗖𝗮𝗻𝗮𝗹',
-                    url: 'https://whatsapp.com/channel/0029Vb75yXeKbYMVbG6Gjv3w'
-                  })
-                },
-                {
-                  name: 'cta_url',
-                  buttonParamsJson: JSON.stringify({
-                    display_text: '𝗢𝗽𝗲𝗻 𝗦𝗼𝘂𝗿𝗰𝗲',
-                    url: 'https://github.com/Ado21/WaMeowBot'
-                  })
-                }
-              ]
-            }
-          }
-        }
+    let _package = JSON.parse(await promises.readFile(join(__dirname, '../package.json')).catch(_ => ({}))) || {}
+    let { exp, limit, level } = global.db.data.users[m.sender]
+    let { min, xp, max } = xpRange(level, global.multiplier)
+    let name = await conn.getName(m.sender)
+    let _uptime = process.uptime() * 1000;
+    let uptime = clockString(_uptime);
+    let totalreg = Object.keys(global.db.data.users).length
+    let rtotalreg = Object.values(global.db.data.users).filter(user => user.registered == true).length
+    let help = Object.values(global.plugins).filter(plugin => !plugin.disabled).map(plugin => {
+      return {
+        help: Array.isArray(plugin.tags) ? plugin.help : [plugin.help],
+        tags: Array.isArray(plugin.tags) ? plugin.tags : [plugin.tags],
+        prefix: 'customPrefix' in plugin,
+        limit: plugin.limit,
+        premium: plugin.premium,
+        enabled: !plugin.disabled,
       }
-    },
-    { quoted: m }
-  )
+    })
+    for (let plugin of help)
+      if (plugin && 'tags' in plugin)
+        for (let tag of plugin.tags)
+          if (!(tag in tags) && tag) tags[tag] = tag
+    conn.menu = conn.menu ? conn.menu : {}
+    let before = conn.menu.before || defaultMenu.before
+    let header = conn.menu.header || defaultMenu.header
+    let body = conn.menu.body || defaultMenu.body
+    let footer = conn.menu.footer || defaultMenu.footer
+    let after = conn.menu.after || (conn.user.jid == global.conn.user.jid ? '' : ``) + defaultMenu.after
+    let _text = [
+      before,
+      ...Object.keys(tags).map(tag => {
+        return header.replace(/%category/g, tags[tag]) + '\n' + [
+          ...help.filter(menu => menu.tags && menu.tags.includes(tag) && menu.help).map(menu => {
+            return menu.help.map(help => {
+              return body.replace(/%cmd/g, menu.prefix ? help : '%p' + help)
+                .replace(/%islimit/g, menu.limit ? '◜⭐◞' : '')
+                .replace(/%isPremium/g, menu.premium ? '◜🪪◞' : '')
+                .trim()
+            }).join('\n')
+          }),
+          footer
+        ].join('\n')
+      }),
+      after
+    ].join('\n')
+    let text = typeof conn.menu == 'string' ? conn.menu : typeof conn.menu == 'object' ? _text : ''
+    let replace = {
+      '%': '%',
+      p: _p, uptime, _uptime,
+      taguser: '@' + m.sender.split("@s.whatsapp.net")[0],
+      wasp: '@0',
+      me: conn.getName(conn.user.jid),
+      npmname: _package.name,
+      version: _package.version,
+      npmdesc: _package.description,
+      npmmain: _package.main,
+      author: _package.author.name,
+      license: _package.license,
+      exp: exp - min,
+      maxexp: xp,
+      totalexp: exp,
+      xp4levelup: max - exp,
+      github: _package.homepage ? _package.homepage.url || _package.homepage : '[unknown github url]',
+      greeting, level, limit, name, totalreg, rtotalreg,
+      readmore: readMore
+    }
+    text = text.replace(new RegExp(`%(${Object.keys(replace).sort((a, b) => b.length - a.length).join`|`})`, 'g'), (_, name) => '' + replace[name])
 
-  await conn.relayMessage(from, content.message, { messageId: content.key.id })
+    let pp = 'https://telegra.ph/file/4c3e4b782c82511b3874d.mp4'
+    let pp2 = 'https://telegra.ph/file/d8c5e18ab0cfc10511f63.mp4'
+    let pp3 = 'https://telegra.ph/file/96e471a87971e2fb4955f.mp4'
+    let pp4 = 'https://telegra.ph/file/09b920486c3c291f5a9e6.mp4'
+    let pp5 = 'https://telegra.ph/file/4948429d0ab0212e9000f.mp4'
+    let pp6 = 'https://telegra.ph/file/cab0bf344ba83d79c1a47.mp4'
+    let pp7 = 'https://telegra.ph/file/6d89bd150ad55db50e332.mp4'
+    let pp8 = 'https://telegra.ph/file/e2f791011e8d183bd6b50.mp4'
+    let pp9 = 'https://telegra.ph/file/546a6a2101423efcce4bd.mp4'
+    let pp10 = 'https://telegra.ph/file/930b9fddde1034360fd86.mp4'
+    let pp11 = 'https://telegra.ph/file/81da492e08bfdb4fda695.mp4'
+    let pp12 = 'https://telegra.ph/file/ec8393df422d40f923e00.mp4'
+    let pp13 = 'https://telegra.ph/file/ba7c4a3eb7bf3d892b0c8.mp4'
+    let pp14 = 'https://tinyurl.com/ymlqb6ml'
+    let pp15 = 'https://tinyurl.com/ykv7g4zy'
+    let img = `./storage/img/menu.jpg`
+    await m.react('⭐')
+   // await conn.sendMessage(m.chat, { video: { url: [pp, pp2, pp3, pp4, pp5, pp6, pp7, pp8, pp9, pp10, pp11, pp12, pp13, pp14, pp15].getRandom() }, gifPlayback: true, caption: text.trim(), mentions: [m.sender] }, { quoted: estilo })
+    await conn.sendFile(m.chat, img, 'thumbnail.jpg', text.trim(), m, null, rcanal)
+   //await conn.sendAi(m.chat, botname, textbot, text.trim(), img, img, canal, estilo)
+
+} catch (e) {
+await m.react('✖️')
+throw e
+}
 }
 
-handler.help = ['menu', 'help', 'ayuda']
+handler.help = ['menu']
 handler.tags = ['main']
-handler.command = ['menu', 'help', 'ayuda']
+handler.command = ['menu', 'help', 'menú'] 
+handler.register = true 
 
 export default handler
+
+
+const more = String.fromCharCode(8206)
+const readMore = more.repeat(4001)
+
+function clockString(ms) {
+let horas = Math.floor(ms / 3600000)
+let minutos = Math.floor(ms / 60000) % 60
+let segundos = Math.floor(ms / 1000) % 60
+  console.log({ ms, horas, minutos, segundos })
+return [horas, minutos, segundos].map((v) => v.toString().padStart(2, 0)).join(":")
+}
+
+  var ase = new Date();
+  var hour = ase.getHours();
+switch(hour){
+  case 0: hour = 'una linda noche 🌙'; break;
+  case 1: hour = 'una linda noche 💤'; break;
+  case 2: hour = 'una linda noche 🦉'; break;
+  case 3: hour = 'una linda mañana ✨'; break;
+  case 4: hour = 'una linda mañana 💫'; break;
+  case 5: hour = 'una linda mañana 🌅'; break;
+  case 6: hour = 'una linda mañana 🌄'; break;
+  case 7: hour = 'una linda mañana 🌅'; break;
+  case 8: hour = 'una linda mañana 💫'; break;
+  case 9: hour = 'una linda mañana ✨'; break;
+  case 10: hour = 'un lindo dia 🌞'; break;
+  case 11: hour = 'un lindo dia 🌨'; break;
+  case 12: hour = 'un lindo dia ❄'; break;
+  case 13: hour = 'un lindo dia 🌤'; break;
+  case 14: hour = 'una linda tarde 🌇'; break;
+  case 15: hour = 'una linda tarde 🥀'; break;
+  case 16: hour = 'una linda tarde 🌹'; break;
+  case 17: hour = 'una linda tarde 🌆'; break;
+  case 18: hour = 'una linda noche 🌙'; break;
+  case 19: hour = 'una linda noche 🌃'; break;
+  case 20: hour = 'una linda noche 🌌'; break;
+  case 21: hour = 'una linda noche 🌃'; break;
+  case 22: hour = 'una linda noche 🌙'; break;
+  case 23: hour = 'una linda noche 🌃'; break;
+}
+  var greeting = "espero que tengas " + hour;
