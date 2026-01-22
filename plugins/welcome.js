@@ -1,3 +1,4 @@
+
 //--> Hecho por Ado-rgb (github.com/Ado-rgb) MODIFICADO MODO GO-HAN BEAST
 // •|• No quites créditos..
 import fetch from 'node-fetch'
@@ -38,19 +39,48 @@ function beastLog(message, type = 'info') {
   console.log(`${icons[type]} ${colors.cyan}[BEAST-WELCOME]${colors.reset} ${message}`)
 }
 
-// 🐉 Imágenes personalizadas para bienvenidas
+// 🐉 Imágenes personalizadas para bienvenidas - USANDO TUS FOTOS
 const beastImages = {
   welcome: [
-    'https://iili.io/f4aSu0G.jpg',
-    'https://tmpfiles.org/dl/20856079/1769111024458.jpg',
-    'https://tmpfiles.org/dl/20856133/1769111069651.jpg',
+    'https://iili.io/f4aSu0G.jpg',  // Tu foto 1
+    'https://iili.io/f4agftI.jpg',  // Tu foto 2
+    'https://iili.io/f4aSu0G.jpg',  // Duplicado para más frecuencia
+    'https://iili.io/f4agftI.jpg',  // Duplicado para más frecuencia
+    'https://images.unsplash.com/photo-1611224923853-80b023f02d71',
+    'https://images.unsplash.com/photo-1579546929662-711aa81148cf'
+  ],
+  goodbye: [
+    'https://iili.io/f4aSu0G.jpg',  // Tu foto 1
+    'https://iili.io/f4agftI.jpg',  // Tu foto 2
+    'https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0',
+    'https://images.unsplash.com/photo-1502691876148-a84978e59af8',
+    'https://images.unsplash.com/photo-1492684223066-dd23140edf6d'
   ]
 }
 
-// 🐉 Función para obtener imagen aleatoria
+// 🐉 Función para obtener imagen aleatoria - CON PREFERENCIA POR TUS FOTOS
 function getRandomBeastImage(type = 'welcome') {
   const images = beastImages[type]
-  return images[Math.floor(Math.random() * images.length)]
+  // Dar más probabilidad a tus fotos (primeras 4 posiciones en welcome, primeras 2 en goodbye)
+  const random = Math.random()
+  
+  if (type === 'welcome') {
+    // 70% de probabilidad para tus fotos (primeras 4 son tuyas)
+    if (random < 0.7) {
+      // Seleccionar de las primeras 4 (tus fotos duplicadas)
+      return images[Math.floor(Math.random() * 4)]
+    } else {
+      // 30% para las otras fotos
+      return images[4 + Math.floor(Math.random() * (images.length - 4))]
+    }
+  } else {
+    // 60% de probabilidad para tus fotos en despedidas (primeras 2 son tuyas)
+    if (random < 0.6) {
+      return images[Math.floor(Math.random() * 2)]
+    } else {
+      return images[2 + Math.floor(Math.random() * (images.length - 2))]
+    }
+  }
 }
 
 // 🐉 Animación de bienvenida beast
@@ -169,6 +199,16 @@ const beastGoodbyeMessages = [
 🎐 *Que tu camino esté lleno de nuevas experiencias*`
 ]
 
+// 🐉 Función para verificar si la imagen existe
+async function verifyImageUrl(url) {
+  try {
+    const response = await fetch(url, { method: 'HEAD' })
+    return response.ok
+  } catch {
+    return false
+  }
+}
+
 // 🐉 Handler principal
 const handler = async (m, { conn, command, args, isAdmin, isOwner }) => {
   if (!m.isGroup) return m.reply('🔒 *Esta función solo funciona en grupos.*')
@@ -201,6 +241,10 @@ ${colors.red}Necesitas ser admin para modificar esta función.${colors.reset}`)
     // Mostrar animación de activación
     if (BEAST_MODE && enable) {
       beastLog('Activando sistema de bienvenidas...', 'beast')
+      beastLog('Usando imágenes personalizadas Gohan Beast', 'info')
+      beastLog(`Foto 1: https://iili.io/f4aSu0G.jpg`, 'info')
+      beastLog(`Foto 2: https://iili.io/f4agftI.jpg`, 'info')
+      
       for (let i = 0; i < beastWelcomeAnim.length; i++) {
         process.stdout.write(`\r${colors.magenta}${beastWelcomeAnim[i]}${colors.reset}`)
         await new Promise(resolve => setTimeout(resolve, 300))
@@ -215,11 +259,15 @@ ${colors.red}Necesitas ser admin para modificar esta función.${colors.reset}`)
 
 ${colors.green}El sistema de bienvenidas/despedidas ha sido ${status}.${colors.reset}
 
-${colors.yellow}Configuración:${colors.reset}
+${colors.yellow}✨ CONFIGURACIÓN ESPECIAL:${colors.reset}
 • Bienvenidas personalizadas ${enable ? '✅' : '❌'}
-• Imágenes aleatorias ${enable ? '✅' : '❌'}
+• Imágenes Gohan Beast ${enable ? '✅' : '❌'}
 • Mensajes épicos ${enable ? '✅' : '❌'}
-• Efectos especiales ${enable ? '✅' : '❌'}`)
+• Efectos especiales ${enable ? '✅' : '❌'}
+
+${colors.cyan}🎯 IMÁGENES ACTIVAS:${colors.reset}
+1. https://iili.io/f4aSu0G.jpg
+2. https://iili.io/f4agftI.jpg`)
   }
 }
 
@@ -237,15 +285,29 @@ handler.before = async (m, { conn }) => {
     const userTag = `@${userId.split('@')[0]}`
     
     let profilePic
+    let imageType = 'beast'
+    
     try {
+      // Intentar obtener foto de perfil del usuario
       profilePic = await conn.profilePictureUrl(userId, 'image')
+      imageType = 'profile'
     } catch {
-      profilePic = getRandomBeastImage('welcome')
+      // Si no tiene foto de perfil, usar una imagen beast aleatoria
+      profilePic = getRandomBeastImage(m.messageStubType === 27 ? 'welcome' : 'goodbye')
+      imageType = 'beast'
+      
+      // Verificar si la imagen existe
+      const imageExists = await verifyImageUrl(profilePic)
+      if (!imageExists) {
+        // Si no existe, usar la primera imagen por defecto
+        profilePic = 'https://iili.io/f4aSu0G.jpg'
+      }
     }
 
     // 🐉 BIENVENIDA (nuevo miembro)
     if (m.messageStubType === 27) {
       beastLog(`Nuevo miembro detectado: ${userTag}`, 'info')
+      beastLog(`Usando imagen: ${imageType === 'beast' ? 'Gohan Beast' : 'Foto de perfil'}`, 'info')
       
       // Seleccionar mensaje aleatorio
       const welcomeMsg = beastWelcomeMessages[Math.floor(Math.random() * beastWelcomeMessages.length)]
@@ -257,33 +319,53 @@ handler.before = async (m, { conn }) => {
       if (BEAST_MODE) {
         console.log(beastLogo)
         beastLog(`Enviando bienvenida épica a ${userTag}...`, 'beast')
+        
+        // Mostrar qué imagen se está usando
+        if (imageType === 'beast') {
+          beastLog(`Imagen Gohan Beast seleccionada: ${profilePic.includes('f4aSu0G') ? 'Foto 1' : 'Foto 2'}`, 'success')
+        }
       }
       
-      // Enviar bienvenida con imagen
-      await conn.sendMessage(m.chat, {
-        image: { url: profilePic },
-        caption: welcomeMsg,
-        mentions: [userId],
-        contextInfo: {
-          externalAdReply: {
-            title: `🐉 ¡BIENVENIDO ${userTag}!`,
-            body: 'Sistema de bienvenidas Gohan Beast',
-            thumbnail: await conn.getFile(profilePic).catch(() => null),
-            mediaType: 1,
-            sourceUrl: 'https://github.com/Ado-rgb'
-          }
-        }
-      })
-      
-      // 🎉 Reacción especial
       try {
+        // Enviar bienvenida con imagen
         await conn.sendMessage(m.chat, {
-          react: {
-            text: '🐉',
-            key: m.key
+          image: { url: profilePic },
+          caption: welcomeMsg,
+          mentions: [userId],
+          contextInfo: {
+            externalAdReply: {
+              title: `🐉 ¡BIENVENIDO ${userTag}!`,
+              body: imageType === 'beast' ? 'Imagen Gohan Beast' : 'Foto de perfil',
+              thumbnail: await conn.getFile(profilePic).catch(() => null),
+              mediaType: 1,
+              sourceUrl: 'https://github.com/Ado-rgb'
+            }
           }
         })
-      } catch {}
+        
+        // 🎉 Reacción especial
+        try {
+          await conn.sendMessage(m.chat, {
+            react: {
+              text: '🐉',
+              key: m.key
+            }
+          })
+        } catch {}
+        
+        beastLog(`Bienvenida enviada exitosamente a ${userTag}`, 'success')
+        
+      } catch (error) {
+        beastLog(`Error al enviar bienvenida: ${error.message}`, 'error')
+        // Intentar con imagen por defecto
+        try {
+          await conn.sendMessage(m.chat, {
+            image: { url: 'https://iili.io/f4aSu0G.jpg' },
+            caption: welcomeMsg,
+            mentions: [userId]
+          })
+        } catch {}
+      }
     }
 
     // 🐉 DESPEDIDA (miembro sale o es eliminado)
@@ -296,22 +378,43 @@ handler.before = async (m, { conn }) => {
         .replace(/{group}/g, groupMetadata.subject)
         .replace(/{remaining}/g, remainingMembers)
       
-      // Enviar despedida
-      await conn.sendMessage(m.chat, {
-        image: { url: getRandomBeastImage('goodbye') },
-        caption: goodbyeMsg,
-        mentions: [userId]
-      })
-      
-      // 🌙 Reacción de despedida
       try {
+        // Usar imagen beast para despedida
+        const goodbyeImage = getRandomBeastImage('goodbye')
+        
+        if (BEAST_MODE) {
+          beastLog(`Usando imagen de despedida: ${goodbyeImage.includes('f4aSu0G') ? 'Foto 1' : 'Foto 2'}`, 'info')
+        }
+        
+        // Enviar despedida
         await conn.sendMessage(m.chat, {
-          react: {
-            text: '🌙',
-            key: m.key
-          }
+          image: { url: goodbyeImage },
+          caption: goodbyeMsg,
+          mentions: [userId]
         })
-      } catch {}
+        
+        // 🌙 Reacción de despedida
+        try {
+          await conn.sendMessage(m.chat, {
+            react: {
+              text: '🌙',
+              key: m.key
+            }
+          })
+        } catch {}
+        
+        beastLog(`Despedida enviada exitosamente para ${userTag}`, 'success')
+        
+      } catch (error) {
+        beastLog(`Error al enviar despedida: ${error.message}`, 'error')
+        // Intentar con imagen por defecto
+        try {
+          await conn.sendMessage(m.chat, {
+            text: goodbyeMsg,
+            mentions: [userId]
+          })
+        } catch {}
+      }
     }
   }
 }
@@ -321,6 +424,9 @@ handler.command = ['on', 'off']
 handler.group = true
 handler.register = false
 handler.tags = ['group', 'welcome', 'beast']
-handler.help = [' no welcome', 'off welcome'
+handler.help = [
+  'on welcome - Activa bienvenidas épicas con imágenes Gohan Beast',
+  'off welcome - Desactiva bienvenidas'
+]
 
 export default handler
