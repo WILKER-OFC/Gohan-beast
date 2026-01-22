@@ -139,8 +139,9 @@ const formatViews = (views) => {
   return views.toString()
 }
 
-handler.command = ["playv", "ytmp4", "ytsearch"]
+handler.command = ["ytmp4", "ytsearch"]
 handler.tags = ["descargas"]
+handler.help = ["ytmp4", "ytsearch"]
 handler.register = false
 
 export default handler
