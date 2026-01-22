@@ -425,8 +425,6 @@ handler.group = true
 handler.register = false
 handler.tags = ['group', 'welcome', 'beast']
 handler.help = [
-  'on welcome - Activa bienvenidas épicas con imágenes Gohan Beast',
-  'off welcome - Desactiva bienvenidas'
-]
+  'on welcome', 'off welcome']
 
 export default handler
