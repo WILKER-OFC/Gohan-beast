@@ -159,8 +159,8 @@ const handler = async (m, { conn, usedPrefix: _p }) => {
     // Botones kawaii (◕ᴗ◕✿)
     const buttons = [
       { 
-        buttonId: '.owner', 
-        buttonText: { displayText: '👑 MAESTRO' }, 
+        buttonId: '.canal', 
+        buttonText: { displayText: '👑 KAME HOUSE' }, 
         type: 1 
       },
       { 
