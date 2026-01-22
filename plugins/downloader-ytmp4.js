@@ -84,7 +84,7 @@ const downloadVideo = async (conn, m, url) => {
   try {
     const sent = await conn.sendMessage(m.chat, { text: "🎬 Descargando video, por favor espera..." }, { quoted: m })
 
-    const apiUrl = `https://api-adonix.ultraplus.click/download/ytvideo?url=${encodeURIComponent(url)}&apikey=SHADOWKEYBOTMD`
+    const apiUrl = `https://api-adonix.ultraplus.click/download/ytvideo?url=${encodeURIComponent(url)}&apikey=KEYGOHANBOT`
 
     const r = await fetch(apiUrl)
     const data = await r.json()
