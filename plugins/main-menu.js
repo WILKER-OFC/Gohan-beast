@@ -223,7 +223,7 @@ El menú Saiyan no pudo cargarse...
 // Comandos y configuración owo
 handler.command = ['menu', 'help', 'menú', 'ayuda', 'comandos', 'beastmenu', 'gohan']
 handler.tags = ['beast', 'main', 'menu']
-handler.help = ['menu', 'Muestra el menú principal de Gohan Beast Bot']
+handler.help = ['menu',]
 handler.register = false
 handler.limit = false
 
