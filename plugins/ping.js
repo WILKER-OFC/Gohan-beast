@@ -56,7 +56,7 @@ ${velocidadDBZ}
   await m.react('✅')
 }
 
-handler.help = ['ping', 'velocidad', 'speed']
+handler.help = ['ping']
 handler.tags = ['beast', 'info']
 handler.command = ['ping', 'p', 'velocidad', 'speed', 'beast']
 export default handler
