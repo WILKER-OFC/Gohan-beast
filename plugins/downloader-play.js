@@ -148,7 +148,7 @@ const formatViews = (views) => {
 }
 
 handler.command = ["play", "yt",]
-handler.tags = ["downloader"]
+handler.tags = ["descargas"]
 handler.register = false
 
 export default handler
