@@ -106,7 +106,7 @@ const handler = async (m, { conn }) => {
   }
 }
 
-handler.help = ['sticker', 's']
+handler.help = ['sticker',]
 handler.tags = ['sticker']
 handler.command = ['sticker', 's']
 
