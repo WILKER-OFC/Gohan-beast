@@ -147,8 +147,9 @@ const formatViews = (views) => {
   return views.toString()
 }
 
-handler.help = ['play']
-handler.tags = ['downloader']
-handler.command = ['playaudio']
+handler.command = ["play",]
+handler.tags = ["descargas"]
+handler.help = ["play"]
+handler.register = false
 
 export default handler
