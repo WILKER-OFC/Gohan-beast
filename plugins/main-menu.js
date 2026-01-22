@@ -6,7 +6,7 @@ import { xpRange } from '../lib/levelling.js'
 const tags = {
   Subbots: '🐉 SUBBOTS',
   eco: '⚡ ENERGÍA SAIYAN',
-  downloader: '🌀 DESCARGAS',
+  descargas: '🌀 DESCARGAS',
   tools: '🔧 HERRAMIENTAS',
   owner: '👑 MAESTRO SAIYAN',
   info: 'ℹ️ INFORMACIÓN',
@@ -37,10 +37,6 @@ const defaultMenu = {
 ║ 💎 *Energía:* %limit
 ║ 📅 *Fecha:* %date
 ║ ⏱️ *Activo:* %uptime
-╠════════════════════╣
-║     📢 *CANAL DRAGON BALL*     
-║ https://whatsapp.com/channel/
-║ 0029Vb724SDHltY4qGU9QS3S
 ╠════════════════════╣
 ║      🌀 *COMANDOS BEAST*       
 %readmore
