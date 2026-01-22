@@ -89,7 +89,7 @@ const downloadAudio = async (conn, m, url) => {
   try {
     const sent = await conn.sendMessage(m.chat, { text: "🎵 Descargando audio, por favor espera..." }, { quoted: m })
 
-    const apiUrl = `https://api-adonix.ultraplus.click/download/ytaudio?url=${encodeURIComponent(url)}&apikey=SHADOWKEYBOTMD`
+    const apiUrl = `https://api-adonix.ultraplus.click/download/ytaudio?url=${encodeURIComponent(url)}&apikey=KEYGOHANBOT`
 
     const r = await fetch(apiUrl)
     const data = await r.json()
