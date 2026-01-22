@@ -140,7 +140,7 @@ const formatViews = (views) => {
 }
 
 handler.command = ["playv", "ytmp4", "ytsearch"]
-handler.tags = ["downloader"]
+handler.tags = ["descargas"]
 handler.register = false
 
 export default handler
