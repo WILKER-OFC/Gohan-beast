@@ -31,11 +31,11 @@ const defaultMenu = {
 ║ Hola~ soy %botname (◕ᴗ◕✿)
 ║ *%name*, %greeting jeje
 ║ 
-║ 📱 *Usuario:* %taguser
 ║ 🐉 *Tipo:* %tipo
-║ ⚡ *Nivel Saiyan:* %level
+║ ⚡ *Nivel Saiyan:* *100%*
 ║ 📅 *Fecha:* %date
 ║ ⏱️ *Activo:* %uptime
+║ 🖥️ *comandos* %comandos
 ╠════════════════════╣
 ║      🌀 𝙲𝙾𝙼𝙰𝙽𝙳𝙾𝚂 𝙶𝙾𝙷𝙰𝙽       
 %readmore
