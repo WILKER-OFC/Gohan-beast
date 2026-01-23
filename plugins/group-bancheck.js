@@ -112,5 +112,5 @@ const handler = async (msg, { conn, text}) => {
 };
 
 handler.command = ["bancheck", "banverify", "checkban", "check"];
-Sandler.help = ["bancheck"]
+handler.help = ["bancheck"]
 export default handler;
