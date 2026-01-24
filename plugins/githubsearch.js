@@ -33,4 +33,5 @@ conn.reply(m.chat,`🚩 *${toFancy("No se encontraron resultados para")}:* ${tex
 handler.help=['githubsearch']
 handler.tags=['buscador']
 handler.command=['githubsearch']
+
 export default handler
