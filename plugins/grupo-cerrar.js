@@ -36,6 +36,7 @@ let handler = async (m, { conn, text, args, isAdmin, isBotAdmin }) => {
   let tiempoTexto = text.toLowerCase()
   let tiempoMs
   let unidad = ''
+  let tiempoSegundos = 0
 
   // 🐉 Parsear tiempo
   if (tiempoTexto.includes("segundo")) {
@@ -45,6 +46,7 @@ let handler = async (m, { conn, text, args, isAdmin, isBotAdmin }) => {
       return
     }
     tiempoMs = segundos * 1000
+    tiempoSegundos = segundos
     unidad = segundos === 1 ? 'segundo' : 'segundos'
   } 
   else if (tiempoTexto.includes("minuto")) {
@@ -54,6 +56,7 @@ let handler = async (m, { conn, text, args, isAdmin, isBotAdmin }) => {
       return
     }
     tiempoMs = minutos * 60 * 1000
+    tiempoSegundos = minutos * 60
     unidad = minutos === 1 ? 'minuto' : 'minutos'
   } 
   else if (tiempoTexto.includes("hora")) {
@@ -63,6 +66,7 @@ let handler = async (m, { conn, text, args, isAdmin, isBotAdmin }) => {
       return
     }
     tiempoMs = horas * 60 * 60 * 1000
+    tiempoSegundos = horas * 60 * 60
     unidad = horas === 1 ? 'hora' : 'horas'
   } 
   else {
@@ -81,41 +85,122 @@ let handler = async (m, { conn, text, args, isAdmin, isBotAdmin }) => {
     await conn.groupSettingUpdate(m.chat, 'announcement')
     
     // 🐉 Mensaje de cierre
-    await conn.sendMessage(m.chat, {
-      text: `🐉 *DOJO CERRADO*\n\nCerrado por ${args[0]} ${unidad}\n\n⚡ Se abrirá automáticamente...`
+    const cierreMsg = await conn.sendMessage(m.chat, {
+      text: `🐉 *DOJO CERRADO*\n\n⏰ Tiempo: ${args[0]} ${unidad}\n\n⏳ *Cuenta regresiva iniciada...*`
     })
 
-    // 🐉 Esperar tiempo
-    await conn.sendMessage(m.chat, {
-      text: `⏳ *Esperando ${args[0]} ${unidad}...*`
-    })
+    // 🐉 Función para mostrar tiempo restante
+    const formatTiempo = (segundos) => {
+      if (segundos < 60) {
+        return `${segundos} segundos`;
+      } else if (segundos < 3600) {
+        const min = Math.floor(segundos / 60);
+        const sec = segundos % 60;
+        return `${min} minuto${min !== 1 ? 's' : ''} ${sec > 0 ? sec + ' segundo' + (sec !== 1 ? 's' : '') : ''}`;
+      } else {
+        const horas = Math.floor(segundos / 3600);
+        const min = Math.floor((segundos % 3600) / 60);
+        return `${horas} hora${horas !== 1 ? 's' : ''} ${min > 0 ? min + ' minuto' + (min !== 1 ? 's' : '') : ''}`;
+      }
+    };
 
-    await delay(tiempoMs)
+    // 🐉 Función para barra de progreso
+    const crearBarra = (porcentaje) => {
+      const barras = 20;
+      const lleno = Math.round((porcentaje / 100) * barras);
+      const vacio = barras - lleno;
+      return '█'.repeat(lleno) + '░'.repeat(vacio);
+    };
+
+    // 🐉 Cuenta regresiva
+    let segundosRestantes = tiempoSegundos;
+    const intervalo = tiempoSegundos <= 60 ? 1000 : 5000; // Actualizar cada 1s o 5s
+    
+    const cuentaRegresiva = async () => {
+      while (segundosRestantes > 0) {
+        await delay(intervalo);
+        segundosRestantes -= (intervalo / 1000);
+        
+        if (segundosRestantes <= 0) break;
+        
+        // Calcular porcentaje
+        const porcentaje = ((tiempoSegundos - segundosRestantes) / tiempoSegundos) * 100;
+        
+        // Actualizar mensaje cada 5 segundos o cada 10% de progreso
+        if (intervalo === 5000 || segundosRestantes % 10 === 0 || segundosRestantes <= 10) {
+          try {
+            // Solo actualizar si hay cambios significativos
+            const tiempoFormateado = formatTiempo(segundosRestantes);
+            const barra = crearBarra(porcentaje);
+            
+            await conn.sendMessage(m.chat, {
+              text: `⏳ *TIEMPO RESTANTE*\n\n${barra} ${Math.round(porcentaje)}%\n\n🕐 ${tiempoFormateado}\n🐉 Abriendo en breve...`,
+              edit: cierreMsg.key
+            });
+          } catch (error) {
+            // Ignorar errores de edición
+          }
+        }
+      }
+    };
+
+    // 🐉 Iniciar cuenta regresiva
+    cuentaRegresiva();
+
+    // 🐉 Esperar tiempo completo
+    await delay(tiempoMs);
+
+    // 🐉 Mensaje final de cuenta regresiva
+    try {
+      await conn.sendMessage(m.chat, {
+        text: `✅ *CUENTA REGRESIVA COMPLETADA*\n\n████████████████████ 100%\n\n⏰ Tiempo cumplido\n🐉 Abriendo dojo...`,
+        edit: cierreMsg.key
+      });
+    } catch (error) {}
+
+    // 🐉 Pequeña pausa dramática
+    await delay(1000);
 
     // 🐉 Abrir grupo
-    await conn.groupSettingUpdate(m.chat, 'not_announcement')
+    await conn.groupSettingUpdate(m.chat, 'not_announcement');
     
     // 🐉 Mensaje de apertura
-    await m.react('✅')
+    await m.react('✅');
+    await m.react('🎉');
+    
+    // 🐉 Enviar mensaje final con efectos
     await conn.sendMessage(m.chat, { 
-      text: `✅ *DOJO ABIERTO*\n\nEl dojo está disponible nuevamente.`
-    })
+      text: `🎊 *DOJO ABIERTO*\n\n✅ Cerrado por: ${args[0]} ${unidad}\n⏱️ Tiempo exacto cumplido\n🐉 ¡Todos pueden hablar nuevamente!`
+    });
+
+    // 🐉 Animación de celebración
+    const celebraciones = ['✨', '🎉', '⚡', '🔥', '🌟'];
+    for (let emoji of celebraciones) {
+      await delay(500);
+      await m.react(emoji);
+    }
 
   } catch (error) {
-    console.error('Error en cerrar grupo:', error)
-    await m.react('❌')
+    console.error('Error en cerrar grupo:', error);
+    await m.react('❌');
+    
+    // Intentar abrir el grupo por si acaso
+    try {
+      await conn.groupSettingUpdate(m.chat, 'not_announcement');
+    } catch {}
+    
     await conn.sendMessage(m.chat, { 
-      text: '❌ *Error*\nNo pude cerrar/abrir el grupo.'
-    })
+      text: '❌ *Error en la cuenta regresiva*\nEl dojo ha sido reabierto.'
+    });
   }
 }
 
+// 🐉 Comandos
+handler.help = ['cerrar <tiempo> segundos/minutos/horas'];
+handler.tags = ['grupo'];
+handler.command = /^cerrar$/i;
+handler.group = true;
+handler.admin = true;
+handler.botAdmin = true;
 
-handler.help = ['cerrar <tiempo> segundos/minutos/horas']
-handler.tags = ['grupo']
-handler.command = /^cerrar$/i
-handler.group = true
-handler.admin = true
-handler.botAdmin = true
-
-export default handler
+export default handler;
