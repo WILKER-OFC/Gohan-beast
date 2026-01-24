@@ -112,39 +112,39 @@ let handler = async (m, { conn, text, args, isAdmin, isBotAdmin }) => {
       return '█'.repeat(lleno) + '░'.repeat(vacio);
     };
 
-    // 🐉 Cuenta regresiva
+    // 🐉 Cuenta regresiva - ACTUALIZACIÓN CADA 20 SEGUNDOS
     let segundosRestantes = tiempoSegundos;
-    const intervalo = tiempoSegundos <= 60 ? 1000 : 5000; // Actualizar cada 1s o 5s
     
     const cuentaRegresiva = async () => {
       while (segundosRestantes > 0) {
-        await delay(intervalo);
-        segundosRestantes -= (intervalo / 1000);
+        await delay(20000); // ESPERA 20 SEGUNDOS
+        
+        segundosRestantes -= 20;
         
         if (segundosRestantes <= 0) break;
         
         // Calcular porcentaje
         const porcentaje = ((tiempoSegundos - segundosRestantes) / tiempoSegundos) * 100;
         
-        // Actualizar mensaje cada 5 segundos o cada 10% de progreso
-        if (intervalo === 5000 || segundosRestantes % 10 === 0 || segundosRestantes <= 10) {
-          try {
-            // Solo actualizar si hay cambios significativos
-            const tiempoFormateado = formatTiempo(segundosRestantes);
-            const barra = crearBarra(porcentaje);
-            
-            await conn.sendMessage(m.chat, {
-              text: `⏳ *TIEMPO RESTANTE*\n\n${barra} ${Math.round(porcentaje)}%\n\n🕐 ${tiempoFormateado}\n🐉 Abriendo en breve...`,
-              edit: cierreMsg.key
-            });
-          } catch (error) {
-            // Ignorar errores de edición
-          }
+        // Actualizar mensaje cada 20 segundos
+        try {
+          const tiempoFormateado = formatTiempo(segundosRestantes);
+          const barra = crearBarra(porcentaje);
+          
+          await conn.sendMessage(m.chat, {
+            text: `⏳ *TIEMPO RESTANTE*\n\n${barra} ${Math.round(porcentaje)}%\n\n🕐 ${tiempoFormateado}\n🐉 Abriendo en breve...`,
+            edit: cierreMsg.key
+          });
+          
+          console.log(`[CUENTA REGRESIVA] Actualizado: ${segundosRestantes}s restantes (${Math.round(porcentaje)}%)`);
+          
+        } catch (error) {
+          console.log('[CUENTA REGRESIVA] Error al actualizar:', error.message);
         }
       }
     };
 
-    // 🐉 Iniciar cuenta regresiva
+    // 🐉 Iniciar cuenta regresiva (no esperar, se ejecuta en segundo plano)
     cuentaRegresiva();
 
     // 🐉 Esperar tiempo completo
@@ -156,7 +156,9 @@ let handler = async (m, { conn, text, args, isAdmin, isBotAdmin }) => {
         text: `✅ *CUENTA REGRESIVA COMPLETADA*\n\n████████████████████ 100%\n\n⏰ Tiempo cumplido\n🐉 Abriendo dojo...`,
         edit: cierreMsg.key
       });
-    } catch (error) {}
+    } catch (error) {
+      console.log('[CUENTA REGRESIVA] Error mensaje final:', error.message);
+    }
 
     // 🐉 Pequeña pausa dramática
     await delay(1000);
