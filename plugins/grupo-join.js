@@ -104,4 +104,4 @@ handler.owner = true;
 export default handler;
 
 
-// solo funciona join salir todavía no
+// funciona solo join 
