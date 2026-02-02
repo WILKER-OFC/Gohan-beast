@@ -98,7 +98,7 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
 }
 
 // COMANDOS CON PODER
-handler.command = ["ttsbeast", "tiktokbeast", "ttdivino", "ttksbeast", "gohansearch"]
+handler.command = ["tts", "tiktoksearch", "ttdivino", "ttksbeast", "gohansearch"]
 handler.help = ["tiktokbeast"]
 handler.tags = ["search", "beastmode"]
 handler.premium = false
