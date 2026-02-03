@@ -36,7 +36,7 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
       message: {
         documentMessage: {
           title: `『 ${title} 』`,
-          fileName: global.botname || "Shadow Bot",
+          fileName: global.botname || "Gohan beast bot",
           jpegThumbnail: thumb3
         }
       }
