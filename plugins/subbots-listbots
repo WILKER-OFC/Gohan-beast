@@ -84,10 +84,9 @@ let handler = async (m, { conn }) => {
   })
 }
 
-handler.command = ['listbots', 'subgohan', 'gohanlist', 'sublist']
+handler.command = ['listbots', 'bots', 'gohanlist', 'sublist']
 handler.help = ['listbots']
 handler.tags = ['serbot']
-handler.register = true
 export default handler
 
 function clockString(ms) {
