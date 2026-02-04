@@ -57,9 +57,9 @@ let handler = async (m, { conn }) => {
       mentions.push(jid)
     }
   } else {
-    txt += `╔═════════════════════╗\n`
+    txt += `╔══════════════════╗\n`
     txt += `       ⚠️ *SIN ACTIVIDAD*\n`
-    txt += `╚═════════════════════╝\n\n`
+    txt += `╚══════════════════╝\n\n`
     txt += `Actualmente no hay sub-bots conectados.\n¡Conviértete en el primero! 🥋`
   }
 
