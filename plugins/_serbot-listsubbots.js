@@ -30,9 +30,9 @@ let handler = async (m, { conn }) => {
   const totalUsers = uniqueUsers.size
 
   // Estilo Gohan Beast
-  let txt = `╔═════════════════════╗\n`
+  let txt = `╔══════════════════╗\n`
   txt += `   ⚡ *GO-HAN BEAST BOT* ⚡\n`
-  txt += `╚═════════════════════╝\n\n`
+  txt += `╚══════════════════╝\n\n`
   txt += `🌀 *Tiempo Activo:* ${formatUptime}\n`
   txt += `👥 *Sub-Bots Conectados:* ${totalUsers}\n\n`
 
