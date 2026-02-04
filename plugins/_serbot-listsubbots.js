@@ -30,18 +30,18 @@ let handler = async (m, { conn }) => {
   const totalUsers = uniqueUsers.size
 
   // Estilo Gohan Beast
-  let txt = `╔═══════════════════════╗\n`
+  let txt = `╔═════════════════════╗\n`
   txt += `   ⚡ *GO-HAN BEAST BOT* ⚡\n`
-  txt += `╚═══════════════════════╝\n\n`
+  txt += `╚═════════════════════╝\n\n`
   txt += `🌀 *Tiempo Activo:* ${formatUptime}\n`
   txt += `👥 *Sub-Bots Conectados:* ${totalUsers}\n\n`
 
   let mentions = []
 
   if (totalUsers > 0) {
-    txt += `╔═══════════════════════╗\n`
+    txt += `╔═════════════════════╗\n`
     txt += `       📊 *LISTA ACTIVA*\n`
-    txt += `╚═══════════════════════╝\n\n`
+    txt += `╚═════════════════════╝\n\n`
 
     let i = 1
     for (const [jid, data] of uniqueUsers) {
@@ -57,9 +57,9 @@ let handler = async (m, { conn }) => {
       mentions.push(jid)
     }
   } else {
-    txt += `╔═══════════════════════╗\n`
+    txt += `╔═════════════════════╗\n`
     txt += `       ⚠️ *SIN ACTIVIDAD*\n`
-    txt += `╚═══════════════════════╝\n\n`
+    txt += `╚═════════════════════╝\n\n`
     txt += `Actualmente no hay sub-bots conectados.\n¡Conviértete en el primero! 🥋`
   }
 
