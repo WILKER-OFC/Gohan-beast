@@ -75,7 +75,7 @@ let handler = async (m, { conn }) => {
       externalAdReply: {
         title: '⚡ GO-HAN BEAST BOT ⚡',
         body: `Total: ${totalUsers} Sub-Bots`,
-        thumbnailUrl: 'https://i.imgur.com/9E6q3Yv.jpeg',
+        thumbnailUrl: 'https://i.ibb.co/whVQPKpy/Km0pq-UM.jpg',
         sourceUrl: 'https://whatsapp.com/channel/0029Va9A5p4J90Xe1RlEo13g',
         mediaType: 1,
         renderLargerThumbnail: true
