@@ -1,195 +1,122 @@
-import axios from 'axios'
-import * as cheerio from 'cheerio'
+import axios from "axios"
 
-async function scrapeFacebook(url) {
-  const TARGET_URL = 'https://fdownloader.net/es'
+const API_BASE = "https://api-adonix.ultraplus.click/download/facebook?apikey=KEYGOHANBOT&url="
 
-  const UA =
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+function isValidUrl(u = "") {
+  try {
+    const url = new URL(u)
+    return /^https?:$/.test(url.protocol)
+  } catch {
+    return false
+  }
+}
+
+function isFacebookUrl(u = "") {
+  return /(?:facebook\.com|fb\.watch)/i.test(u)
+}
+
+function formatUnixSeconds(sec) {
+  const n = Number(sec)
+  if (!Number.isFinite(n) || n <= 0) return "N/A"
+  const d = new Date(n * 1000)
+  if (Number.isNaN(d.getTime())) return "N/A"
+  return d.toLocaleString()
+}
+
+function formatDuration(raw) {
+  const n = Number(raw)
+  if (!Number.isFinite(n) || n <= 0) return "N/A"
+
+  const ms = n >= 1000 && n < 60 * 60 * 1000 ? n : null
+  const seconds = ms ? Math.round(ms / 1000) : (n < 60 * 60 * 24 ? n : null)
+
+  const totalSec = seconds ?? (Number.isFinite(n) ? n : null)
+  if (!totalSec || totalSec <= 0) return String(n)
+
+  const s = Math.floor(totalSec % 60)
+  const m = Math.floor((totalSec / 60) % 60)
+  const h = Math.floor(totalSec / 3600)
+
+  const hh = h ? `${h}h ` : ""
+  const mm = m ? `${m}m ` : ""
+  const ss = `${s}s`
+
+  return ms ? `${hh}${mm}${ss} (aprox, desde ${n}ms)` : `${hh}${mm}${ss}`
+}
+
+let handler = async (m, { conn, text, usedPrefix, command }) => {
+  const chatId = m?.chat || m?.key?.remoteJid
+  if (!chatId) return
+
+  const url = (text || "").trim()
+
+  if (!url || !isValidUrl(url) || !isFacebookUrl(url)) {
+    return await conn.sendMessage(
+      chatId,
+      {
+        text:
+          `「✦」Uso correcto:\n` +
+          `> ✐ ${usedPrefix + command} <link-facebook>\n\n` +
+          `「✦」Ejemplo:\n` +
+          `> ✐ ${usedPrefix + command} https://www.facebook.com/reel/1230818705820254/`
+      },
+      { quoted: m }
+    )
+  }
+
+  const apiUrl = API_BASE + encodeURIComponent(url)
 
   try {
-    const pageResponse = await axios.get(TARGET_URL, {
-      headers: { 'User-Agent': UA }
+    await conn.sendMessage(chatId, { react: { text: "🕒", key: m.key } })
+
+    const { data } = await axios.get(apiUrl, {
+      timeout: 60000,
+      headers: { "User-Agent": "Mozilla/5.0" }
     })
 
-    const html = pageResponse.data
-    const kExpMatch = html.match(/k_exp="(.*?)"/)
-    const kTokenMatch = html.match(/k_token="(.*?)"/)
-
-    const k_exp = kExpMatch ? kExpMatch[1] : null
-    const k_token = kTokenMatch ? kTokenMatch[1] : null
-
-    if (!k_exp || !k_token) throw new Error('Could not find tokens on the page.')
-
-    const searchPayload = {
-      k_exp,
-      k_token,
-      q: url,
-      lang: 'es',
-      web: 'fdownloader.net',
-      v: 'v2',
-      w: '',
-      cftoken: ''
+    if (!data || data.status !== true || !data.result) {
+      throw new Error("Respuesta inválida de la API.")
     }
 
-    const searchResponse = await axios.post(
-      'https://v3.fdownloader.net/api/ajaxSearch',
-      new URLSearchParams(searchPayload).toString(),
+    const info = data.result?.info || {}
+    const author = data.result?.author || {}
+    const media = data.result?.media || {}
+
+    const videoHD = media?.video_hd || ""
+    const videoSD = media?.video_sd || ""
+    const videoUrl = videoHD || videoSD
+
+    if (!videoUrl || !isValidUrl(videoUrl)) {
+      throw new Error("No se encontró un enlace de video válido (HD/SD).")
+    }
+
+    const caption =
+      `「✦」 *Facebook Downloader*\n\n` +
+      `≡ *Título:* ${info?.title ?? "N/A"}\n` +
+      `≡ *Link:* ${info?.permalink_url ?? url}\n` +
+      `≡ *Creación:* ${formatUnixSeconds(info?.creation_time)}\n` +
+      `≡ *Duración:* ${formatDuration(info?.duration)}\n\n`
+
+    await conn.sendMessage(
+      chatId,
       {
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
-          'User-Agent': UA,
-          Origin: 'https://fdownloader.net',
-          Referer: 'https://fdownloader.net/'
-        }
-      }
+        video: { url: videoUrl },
+        mimetype: "video/mp4",
+        caption
+      },
+      { quoted: m }
     )
 
-    if (searchResponse.data.status !== 'ok') {
-      throw new Error('Search failed or private video.')
-    }
-
-    const htmlData = searchResponse.data.data
-    const $result = cheerio.load(htmlData)
-
-    let videoLink = null
-    let bestQuality = ''
-
-    const renderButton = $result('button[onclick*="convertFile"]')
-    if (renderButton.length > 0) {
-      const videoUrl = renderButton.attr('data-videourl')
-      const videoCodec = renderButton.attr('data-videocodec')
-      const videoType = renderButton.attr('data-videotype')
-      const fquality = renderButton.attr('data-fquality')
-
-      const audioUrl = $result('#audioUrl').val()
-      const audioType = $result('#audioType').val()
-      const v_id = $result('#FbId').val()
-
-      const cTokenMatch = htmlData.match(/c_token\s*=\s*"(.*?)"/)
-      const kExpMatchRes = htmlData.match(/k_exp\s*=\s*"(.*?)"/)
-      const kUrlConvertMatch = htmlData.match(/k_url_convert\s*=\s*"(.*?)"/)
-
-      const c_token = cTokenMatch ? cTokenMatch[1] : null
-      const k_exp_res = kExpMatchRes ? kExpMatchRes[1] : null
-      const k_url_convert = kUrlConvertMatch
-        ? kUrlConvertMatch[1]
-        : 'https://s3.vidcdn.app/api/json/convert'
-
-      if (videoUrl && audioUrl && c_token) {
-        const convertPayload = {
-          ftype: 'mp4',
-          v_id,
-          videoUrl,
-          videoType,
-          videoCodec,
-          audioUrl,
-          audioType,
-          fquality,
-          fname: 'FDownloader.net',
-          exp: k_exp_res,
-          token: c_token,
-          cv: 'v2'
-        }
-
-        try {
-          const convertResponse = await axios.post(
-            k_url_convert,
-            new URLSearchParams(convertPayload).toString(),
-            {
-              headers: {
-                'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
-                'User-Agent': UA,
-                Origin: 'https://fdownloader.net',
-                Referer: 'https://fdownloader.net/'
-              }
-            }
-          )
-
-          if (convertResponse.data?.result) {
-            videoLink = convertResponse.data.result
-            bestQuality = fquality || ''
-          }
-        } catch (e) {}
-      }
-    }
-
-    if (!videoLink) {
-      $result('a.download-link-fb').each((i, el) => {
-        const quality = $result(el).closest('tr').find('.video-quality').text().trim()
-        const href = $result(el).attr('href')
-        if (!href) return
-
-        if (
-          !videoLink ||
-          quality.includes('1080') ||
-          quality.includes('720') ||
-          quality.toUpperCase().includes('HD')
-        ) {
-          videoLink = href
-          bestQuality = quality
-        }
-      })
-    }
-
-    if (!videoLink) {
-      const firstLink = $result('a.download-link-fb').first().attr('href')
-      if (firstLink) videoLink = firstLink
-    }
-
-    if (!videoLink) throw new Error('No video links found.')
-
-    return { videoUrl: videoLink, quality: bestQuality }
-  } catch (error) {
-    throw error
+    await conn.sendMessage(chatId, { react: { text: "✔️", key: m.key } })
+  } catch (e) {
+    await conn.sendMessage(chatId, { react: { text: "❌", key: m.key } })
+    const msg = String(e?.message || e || "Error desconocido.")
+    return await conn.sendMessage(chatId, { text: `「✦」Error: ${msg}` }, { quoted: m })
   }
 }
 
-async function downloadToBuffer(fileUrl) {
-  const UA =
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-
-  const res = await axios.get(fileUrl, {
-    responseType: 'arraybuffer',
-    maxRedirects: 5,
-    timeout: 120000,
-    headers: {
-      'User-Agent': UA,
-      Accept: '*/*'
-    }
-  })
-
-  return Buffer.from(res.data)
-}
-
-let handler = async (m, { conn, text }) => {
-  if (!text) return m.reply('Ingresa el link del video de Facebook')
-
-  await m.reply('Descargando video de Facebook, por favor espere...')
-
-  try {
-    const { videoUrl, quality } = await scrapeFacebook(text)
-
-    const buffer = await downloadToBuffer(videoUrl)
-
-    const caption = `Facebook Video (${quality || 'SD'})`
-    await conn.sendFile(
-      m.chat,
-      buffer,
-      `fb_${Date.now()}.mp4`,
-      caption,
-      m,
-      false,
-      { mimetype: 'video/mp4' }
-    )
-  } catch (error) {
-    console.error('Error:', error?.message || error)
-    m.reply(`Ocurrió un error: ${error?.message || error}`)
-  }
-}
-
-handler.help = ['fb']
-handler.tags = ['dl']
-handler.command = /^(fb|fbook|fbdl)$/i
+handler.help = ["facebook <url>", "fb <url>", "fbdl <url>"]
+handler.tags = ["downloader"]
+handler.command = ["facebook", "fb"]
 
 export default handler
