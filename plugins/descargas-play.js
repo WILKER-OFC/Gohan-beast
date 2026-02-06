@@ -71,7 +71,7 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
       { quoted: fkontak }
     )
 
-    // Descargar y enviar el audio automáticamente
+    // Descargar y enviar el audio automáticamente usando múltiples APIs
     await downloadAudio(conn, m, url)
 
   } catch (e) {
@@ -85,28 +85,77 @@ const fetchBuffer = async (url) => {
   return await response.buffer()
 }
 
+// Lista de APIs para probar en orden
+const APIS = [
+  {
+    name: "Stellar API",
+    url: (url) => `https://api.stellarwa.xyz/dl/youtubeplay?url=${encodeURIComponent(url)}`,
+    headers: {
+      "Authorization": "stellar-BQ1oVqLQ"
+    },
+    getAudioUrl: (data) => data?.result?.audio || data?.audio
+  },
+  {
+    name: "Adonix API",
+    url: (url) => `https://api-adonix.ultraplus.click/download/ytaudio?url=${encodeURIComponent(url)}&apikey=KEYGOHANBOT`,
+    headers: {},
+    getAudioUrl: (data) => data?.data?.url
+  }
+]
+
 const downloadAudio = async (conn, m, url) => {
   try {
     const sent = await conn.sendMessage(m.chat, { text: "🎵 Descargando audio, por favor espera..." }, { quoted: m })
 
-    const apiUrl = `https://api-adonix.ultraplus.click/download/ytaudio?url=${encodeURIComponent(url)}&apikey=KEYGOHANBOT`
+    let audioUrl = null
+    let apiName = ""
+    let title = "audio"
 
-    const r = await fetch(apiUrl)
-    const data = await r.json()
+    // Probar cada API en orden
+    for (const api of APIS) {
+      try {
+        await conn.sendMessage(
+          m.chat,
+          { text: `🔍 Probando con ${api.name}...`, edit: sent.key }
+        )
 
-    if (!data?.status || !data?.data?.url) {
+        const apiUrl = api.url(url)
+        const r = await fetch(apiUrl, { headers: api.headers })
+        const data = await r.json()
+
+        if (data && api.getAudioUrl(data)) {
+          audioUrl = api.getAudioUrl(data)
+          apiName = api.name
+          title = cleanName(data.result?.title || data.data?.title || "audio")
+          
+          await conn.sendMessage(
+            m.chat,
+            { text: `✅ Conectado a ${api.name}`, edit: sent.key }
+          )
+          break
+        }
+      } catch (e) {
+        console.error(`Error con ${api.name}:`, e.message)
+        // Continuar con la siguiente API
+      }
+    }
+
+    if (!audioUrl) {
       await conn.sendMessage(
         m.chat,
-        { text: "🚫 No se pudo descargar el audio.", edit: sent.key }
+        { text: "🚫 No se pudo descargar el audio con ninguna API disponible.", edit: sent.key }
       )
+      await m.react("💀")
       return
     }
 
-    const fileUrl = data.data.url
-    const fileTitle = cleanName(data.data.title || "audio")
-
     // Descargar el buffer del audio
-    const audioBuffer = await fetchBuffer(fileUrl)
+    await conn.sendMessage(
+      m.chat,
+      { text: `⬇️ Descargando desde ${apiName}...`, edit: sent.key }
+    )
+
+    const audioBuffer = await fetchBuffer(audioUrl)
 
     // Enviar el audio
     await conn.sendMessage(
@@ -114,8 +163,8 @@ const downloadAudio = async (conn, m, url) => {
       { 
         audio: audioBuffer, 
         mimetype: "audio/mpeg", 
-        fileName: fileTitle + ".mp3",
-        caption: `✅ Audio descargado\n\n🎼 Título: ${fileTitle}` 
+        fileName: title + ".mp3",
+        caption: `✅ Audio descargado\n\n🎼 Título: ${title}\n🔧 API: ${apiName}` 
       },
       { quoted: m }
     )
@@ -123,7 +172,7 @@ const downloadAudio = async (conn, m, url) => {
     // Actualizar mensaje de estado
     await conn.sendMessage(
       m.chat,
-      { text: `✅ Audio descargado con éxito`, edit: sent.key }
+      { text: `✅ Audio descargado con éxito usando ${apiName}`, edit: sent.key }
     )
 
     await m.react("✅")
@@ -137,7 +186,10 @@ const downloadAudio = async (conn, m, url) => {
   }
 }
 
-const cleanName = (name) => name.replace(/[^\w\s-_.]/gi, "").substring(0, 50)
+const cleanName = (name) => {
+  if (!name) return "audio"
+  return name.replace(/[^\w\s-_.]/gi, "").substring(0, 50)
+}
 
 const formatViews = (views) => {
   if (views === undefined || views === null) return "No disponible"
