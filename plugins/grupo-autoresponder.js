@@ -1,87 +1,109 @@
-import handler = async (m, { conn, text, mentionedJid, sender }) => {
-  const botNumber = conn.user.jid
-  const botNumberShort = botNumber.split('@')[0]
-  
-  // Verificar si mencionan al bot
-  const isMentioned = mentionedJid && mentionedJid.includes(botNumber)
-  const hasBotName = m.text && (
-    m.text.includes(`@${botNumberShort}`) ||
-    m.text.toLowerCase().includes(conn.user.name.toLowerCase()) ||
-    /bot|robot|🤖|⚡/i.test(m.text)
-  )
-  
-  if (!isMentioned && !hasBotName) return
-  
-  // Opciones de respuesta
-  const options = [
-    {
-      type: 'text',
-      content: "¡Wao! 😎 ¿Me mencionaron? Aquí ando, ¿qué necesitan?",
-      mentions: [sender]
-    },
-    {
-      type: 'text', 
-      content: "¡Ta chido bro! ⚡ ¿Me estabas buscando?",
-      mentions: [sender]
-    },
-    {
-      type: 'sticker',
-      packname: "Bot mencionado",
-      author: "Sistema",
-      url: "https://raw.githubusercontent.com/WhiskeySockets/Baileys/master/assets/logo.png"
-    },
-    {
-      type: 'image',
-      url: "https://media.tenor.com/images/1f0cde2ef5b64d4afcc4f43a011f2bb3/tenor.gif",
-      caption: "¡Aquí estoy! 🚀 ¿Algo que necesites?"
-    },
-    {
-      type: 'text',
-      content: "🤖 *Beep boop* 🤖\nUsuario detectado: @" + sender.split('@')[0] + "\nSistema: Activado\nRespuesta: ¿En qué te ayudo?",
-      mentions: [sender]
-    }
-  ]
-  
-  const selected = options[Math.floor(Math.random() * options.length)]
-  
+import { areJidsSameUser } from '@whiskeysockets/baileys'
+
+const mentionHandler = async (m, { conn }) => {
   try {
-    switch (selected.type) {
-      case 'text':
-        await conn.sendMessage(m.chat, {
-          text: selected.content,
-          mentions: selected.mentions || []
-        }, { quoted: m })
-        break
-        
-      case 'sticker':
-        await conn.sendMessage(m.chat, {
-          sticker: { url: selected.url },
-          mentions: [sender]
-        }, { quoted: m })
-        break
-        
-      case 'image':
-        await conn.sendMessage(m.chat, {
-          image: { url: selected.url },
-          caption: selected.caption || "",
-          mentions: [sender]
-        }, { quoted: m })
-        break
-    }
+    // Solo procesar mensajes de texto
+    if (!m.text || typeof m.text !== 'string' || m.text.length === 0) return
     
-    // Reacción automática
+    const botNumber = conn.user.jid
+    const botId = botNumber.split('@')[0]
+    const sender = m.sender
+    
+    // Evitar auto-respuesta
+    if (areJidsSameUser(sender, botNumber)) return
+    
+    // Verificar menciones
+    const mentionedJid = m.mentionedJid || []
+    const isMentioned = mentionedJid.some(jid => areJidsSameUser(jid, botNumber))
+    
+    // Verificar si el texto hace referencia al bot
+    const text = m.text.toLowerCase()
+    const mentionsBot = text.includes(`@${botId}`) || 
+                       text.includes('bot') || 
+                       text.includes('🤖') ||
+                       text.includes('robot') ||
+                       text.includes('asistente') ||
+                       text.includes('⚡') ||
+                       (text.includes('hola') && (text.includes('bot') || text.includes('🤖')))
+    
+    if (!isMentioned && !mentionsBot) return
+    
+    // Respuestas aleatorias
+    const responses = [
+      "¡Wao! 😎 ¿Me llamaban?",
+      "¡Ta chido bro! ⚡ ¿Qué pasa?",
+      "¡Aquí estoy! 🚀 ¿En qué te ayudo?",
+      "🤖 *Beep boop* Sistema activado",
+      "¡Presente! ✨ ¿Necesitas algo?",
+      "¡Hola! 👋 ¿Me mencionaste?",
+      "¡Sí, soy yo! 😊 ¿Qué necesitas?",
+      "¡Wao, ta chido! ⭐ ¿Algún comando?",
+      "¡Ey! 👀 ¿Me necesitabas?",
+      "¡Aquí ando! 💫 ¿Buscabas ayuda?"
+    ]
+    
+    const randomResponse = responses[Math.floor(Math.random() * responses.length)]
+    
+    // Reacción
     await conn.sendMessage(m.chat, {
-      react: { text: '🤖', key: m.key }
+      react: { text: '⚡', key: m.key }
     })
     
-  } catch (error) {
-    console.error('Error al responder mención:', error)
-    // Respuesta de fallback
+    // Pequeña pausa para parecer natural
+    await new Promise(resolve => setTimeout(resolve, 800))
+    
+    // Enviar respuesta
     await conn.sendMessage(m.chat, {
-      text: "¡Hola! 👋 Veo que me mencionaste. ¿En qué puedo ayudarte?",
+      text: randomResponse,
       mentions: [sender]
     }, { quoted: m })
+    
+    // Log en consola
+    console.log(`[AUTO-MENTION] Respondido a @${sender.split('@')[0]}: "${m.text.substring(0, 30)}..."`)
+    
+  } catch (error) {
+    console.error('Error en mención automática:', error)
   }
 }
 
-export default handler
+// Configuración para activación automática
+mentionHandler.event = 'message.create'
+mentionHandler.before = (m, { conn }) => {
+  try {
+    // Solo mensajes de texto
+    if (!m.text || typeof m.text !== 'string') return false
+    
+    // Evitar comandos que empiecen con punto
+    if (m.text.trim().startsWith('.')) return false
+    
+    const botNumber = conn.user.jid
+    const botId = botNumber.split('@')[0]
+    const text = m.text.toLowerCase()
+    
+    // Verificar menciones directas
+    const mentionedJid = m.mentionedJid || []
+    const isDirectMention = mentionedJid.some(jid => areJidsSameUser(jid, botNumber))
+    
+    // Verificar referencias al bot
+    const hasBotReference = text.includes(`@${botId}`) || 
+                           text.includes('bot') || 
+                           text.includes('🤖') ||
+                           text.includes('robot')
+    
+    return isDirectMention || hasBotReference
+  } catch (e) {
+    console.error('Error en before hook:', e)
+    return false
+  }
+}
+
+// Metadata del handler
+mentionHandler.command = false
+mentionHandler.tags = ['auto-response']
+mentionHandler.group = true
+mentionHandler.private = true
+mentionHandler.botAdmin = false
+mentionHandler.admin = false
+mentionHandler.owner = false
+
+export default mentionHandler
