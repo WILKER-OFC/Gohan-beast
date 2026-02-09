@@ -11,7 +11,7 @@ export default {
       if (!args[0]) {
         return client.reply(
           m.chat,
-          "❌ Ingresa un enlace de Facebook\n\n🌀 Ejemplo:\n!fb https://www.facebook.com/share/r/15kXJEJXPA/",
+          "❌ Ingresa un enlace de Facebook\n\n🌀 Ejemplo:\n!fb https://www.facebook.com/Enlace.de.facebook",
           m,
           global.channelInfo
         );
