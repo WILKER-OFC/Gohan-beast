@@ -80,7 +80,8 @@
     "url-regex-safe": "^3.0.0",
     "ws": "^8.17.1",
     "yargs": "^17.6.0",
-    "yt-search": "^2.10.3"
+    "yt-search": "^2.10.3",
+    "lurcloud": "github:AzamiJs/lurcloud"
   },
   "optionalDependencies": {
     "moment-timezone": "^0.5.45"
