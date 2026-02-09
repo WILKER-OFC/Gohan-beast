@@ -136,7 +136,7 @@ handler.limit = true
 handler.premium = false
 handler.register = false
 handler.group = true
-handler.private = true
+handler.private = false
 handler.botAdmin = false
 handler.admin = false
 
