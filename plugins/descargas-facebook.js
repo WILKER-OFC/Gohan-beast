@@ -7,7 +7,7 @@ const handler = async (m, { conn, args, usedPrefix, command }) => {
         `❌ *Ingresa un enlace de Facebook*\n\n` +
         `📌 *Ejemplo:*\n` +
         `${usedPrefix}${command} https://www.facebook.com/share/r/15kXJEJXPA/\n\n` +
-        `🤖 *Gohan Beast Bot*`,
+        `🤖 *Gohan Beast*`,
         m
       );
     }
