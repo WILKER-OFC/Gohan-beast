@@ -1,5 +1,5 @@
 // KICK MODO GO-HAN BEAST (VERSIÓN BALANCEADA)
-var handler = async (m, { conn, args }) => {
+const handler = async (m, { conn, args }) => {
     if (!m.isGroup) return m.reply('🔒 *Solo se puede usar en el dojo grupal*');
 
     const groupMetadata = await conn.groupMetadata(m.chat);
@@ -7,8 +7,8 @@ var handler = async (m, { conn, args }) => {
     
     // Números permitidos manualmente (sin +)
     const adminPermitidos = [
-        '584125877491',  // WILKER
-        '5492644138998'  // BOT GOHAN
+        '584125877491',  // Tu número
+        '5492644893953'  // Número del bot
     ];
     
     // Verificación mejorada de admin
@@ -26,25 +26,22 @@ var handler = async (m, { conn, args }) => {
         return m.reply('🐉 *Solo dueños Saiyans pueden expulsar del dojo*');
     }
 
-    // Obtener usuario - CORREGIDO PARA RESPONDER MENSAJES
+    // Obtener usuario
     let user;
     if (m.quoted) {
-        // Cuando respondes a un mensaje de la persona
         user = m.quoted.sender;
     } else if (m.mentionedJid && m.mentionedJid.length > 0) {
-        // Cuando mencionas a alguien con @
         user = m.mentionedJid[0];
     } else if (args[0]) {
-        // Cuando escribes el número
         const number = args[0].replace(/[^0-9]/g, '');
         if (!number) return m.reply('⚠️ *Número inválido*');
-        user = number + '@s.whatsapp.net';
+        user = `${number}@s.whatsapp.net`;
     } else {
         return m.reply('🐉 *Usa para expulsar del dojo:*\n.kick @usuario\n.kick 584123456789\nResponde .kick a un mensaje');
     }
 
-    const ownerGroup = groupMetadata.owner || m.chat.split`-`[0] + '@s.whatsapp.net';
-    const ownerBot = global.owner?.[0]?.[0] ? global.owner[0][0] + '@s.whatsapp.net' : null;
+    const ownerGroup = groupMetadata.owner || `${m.chat.split('-')[0]}@s.whatsapp.net`;
+    const ownerBot = global.owner?.[0]?.[0] ? `${global.owner[0][0]}@s.whatsapp.net` : null;
 
     // Protecciones
     if (user === conn.user.jid) {
@@ -81,7 +78,7 @@ var handler = async (m, { conn, args }) => {
 
         await conn.groupParticipantsUpdate(m.chat, [user], 'remove');
 
-        // Mensajes Gohan Beast cortos
+        // Mensajes Gohan Beast
         const beastMessages = [
             `🐉 *¡EXPULSADO!*\n${user.split('@')[0]} fue purificado`,
             `⚡ *KAMEHAMEHA!*\nAdiós ${user.split('@')[0]}`,
@@ -95,15 +92,22 @@ var handler = async (m, { conn, args }) => {
         await m.reply(msg);
 
     } catch (e) {
-        console.error(e);
+        console.error('Error en kick:', e);
         await m.react('❌');
-        await m.reply('🐉 *Error* - Dame admin o verifica permisos');
+        
+        if (e.message?.includes('not authorized')) {
+            return m.reply('🐉 *Error* - Dame permisos de administrador');
+        } else if (e.message?.includes('401')) {
+            return m.reply('🐉 *Error* - El bot no es admin del grupo');
+        } else {
+            return m.reply('🐉 *Error* - No se pudo expulsar');
+        }
     }
 };
 
 handler.help = ['kick @usuario', 'kick (responde a mensaje)', 'kick 584123456789'];
 handler.tags = ['group', 'admin'];
-handler.command = ['kick','echar','hechar','sacar','ban','expulsar'];
+handler.command = ['kick', 'echar', 'hechar', 'sacar', 'ban', 'expulsar'];
 handler.register = false;
 handler.admin = true;
 handler.group = true;
