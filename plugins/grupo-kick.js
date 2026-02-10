@@ -8,7 +8,7 @@ var handler = async (m, { conn, args }) => {
     // Números permitidos manualmente (sin +)
     const adminPermitidos = [
         '584125877491',  // WILKER
-        '5492644893953'  // Número del bot
+        '5492644138998'  // BOT GOHAN
     ];
     
     // Verificación mejorada de admin
@@ -26,18 +26,21 @@ var handler = async (m, { conn, args }) => {
         return m.reply('🐉 *Solo dueños Saiyans pueden expulsar del dojo*');
     }
 
-    // Obtener usuario
+    // Obtener usuario - CORREGIDO PARA RESPONDER MENSAJES
     let user;
-    if (m.mentionedJid && m.mentionedJid[0]) {
-        user = m.mentionedJid[0];
-    } else if (m.quoted) {
+    if (m.quoted) {
+        // Cuando respondes a un mensaje de la persona
         user = m.quoted.sender;
+    } else if (m.mentionedJid && m.mentionedJid.length > 0) {
+        // Cuando mencionas a alguien con @
+        user = m.mentionedJid[0];
     } else if (args[0]) {
+        // Cuando escribes el número
         const number = args[0].replace(/[^0-9]/g, '');
         if (!number) return m.reply('⚠️ *Número inválido*');
         user = number + '@s.whatsapp.net';
     } else {
-        return m.reply('🐉 *Usa para expulsar del dojo:* .kick @user');
+        return m.reply('🐉 *Usa para expulsar del dojo:*\n.kick @usuario\n.kick 584123456789\nResponde .kick a un mensaje');
     }
 
     const ownerGroup = groupMetadata.owner || m.chat.split`-`[0] + '@s.whatsapp.net';
@@ -82,7 +85,9 @@ var handler = async (m, { conn, args }) => {
         const beastMessages = [
             `🐉 *¡EXPULSADO!*\n${user.split('@')[0]} fue purificado`,
             `⚡ *KAMEHAMEHA!*\nAdiós ${user.split('@')[0]}`,
-            `🔥 *FUERA!*\n${user.split('@')[0]} eliminado`
+            `🔥 *FUERA!*\n${user.split('@')[0]} eliminado`,
+            `💥 *MASENKO!*\n${user.split('@')[0]} voló lejos`,
+            `🌪️ *EXPULSIÓN DIVINA!*\n${user.split('@')[0]} ya no está aquí`
         ];
 
         const msg = beastMessages[Math.floor(Math.random() * beastMessages.length)];
@@ -90,16 +95,18 @@ var handler = async (m, { conn, args }) => {
         await m.reply(msg);
 
     } catch (e) {
+        console.error(e);
         await m.react('❌');
-        await m.reply('🐉 *Error* - Dame admin');
+        await m.reply('🐉 *Error* - Dame admin o verifica permisos');
     }
 };
 
-handler.help = ['kick @user'];
-handler.tags = ['group'];
-handler.command = ['kick','echar','hechar','sacar','ban'];
+handler.help = ['kick @usuario', 'kick (responde a mensaje)', 'kick 584123456789'];
+handler.tags = ['group', 'admin'];
+handler.command = ['kick','echar','hechar','sacar','ban','expulsar'];
 handler.register = false;
 handler.admin = true;
 handler.group = true;
+handler.botAdmin = true;
 
 export default handler;
