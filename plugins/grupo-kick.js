@@ -1,5 +1,5 @@
-// KICK MODO GO-HAN BEAST (VERSIÓN BALANCEADA)
-var handler = async (m, { conn, args }) => {
+// KICK MODO GO-HAN BEAST (VERSIÓN BALANCEADA) - CORREGIDO
+var handler = async (m, { conn, args, command }) => {
     if (!m.isGroup) return m.reply('🔒 *Solo se puede usar en el dojo grupal*');
 
     const groupMetadata = await conn.groupMetadata(m.chat);
@@ -7,7 +7,7 @@ var handler = async (m, { conn, args }) => {
     
     // Números permitidos manualmente (sin +)
     const adminPermitidos = [
-        '584125877491',  // Tu número
+        '5841257788491',  // Tu número
         '5492644893953'  // Número del bot
     ];
     
@@ -26,18 +26,32 @@ var handler = async (m, { conn, args }) => {
         return m.reply('🐉 *Solo dueños Saiyans pueden expulsar del dojo*');
     }
 
-    // Obtener usuario
+    // Obtener usuario - VERSIÓN MEJORADA Y CORREGIDA
     let user;
-    if (m.mentionedJid && m.mentionedJid[0]) {
-        user = m.mentionedJid[0];
-    } else if (m.quoted) {
+    
+    // PRIMERO: Verificar si hay mensaje citado
+    if (m.quoted) {
         user = m.quoted.sender;
-    } else if (args[0]) {
+        console.log('Usuario obtenido de quoted:', user); // Para debug
+    } 
+    // SEGUNDO: Verificar menciones
+    else if (m.mentionedJid && m.mentionedJid.length > 0) {
+        user = m.mentionedJid[0];
+    } 
+    // TERCERO: Verificar argumento de número
+    else if (args[0]) {
         const number = args[0].replace(/[^0-9]/g, '');
         if (!number) return m.reply('⚠️ *Número inválido*');
         user = number + '@s.whatsapp.net';
-    } else {
-        return m.reply('🐉 *Usa para expulsar del dojo:* .kick @user');
+    } 
+    // CUARTO: Si no hay nada, mostrar error
+    else {
+        return m.reply('🐉 *Usa para expulsar del dojo:*\n*.kick @usuario*\n*.kick 584...*\n*O responde a un mensaje con .kick*');
+    }
+
+    // Validar que se obtuvo un usuario
+    if (!user) {
+        return m.reply('❌ *No se pudo identificar al usuario*');
     }
 
     const ownerGroup = groupMetadata.owner || m.chat.split`-`[0] + '@s.whatsapp.net';
@@ -90,8 +104,9 @@ var handler = async (m, { conn, args }) => {
         await m.reply(msg);
 
     } catch (e) {
+        console.error('Error al expulsar:', e); // Para debug
         await m.react('❌');
-        await m.reply('🐉 *Error* - Dame admin');
+        await m.reply('🐉 *Error* - Dame admin o verifica permisos');
     }
 };
 
