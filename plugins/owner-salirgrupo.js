@@ -20,7 +20,7 @@ const handler = async (m, { conn, isOwner, isGroup }) => {
 
     await conn.reply(
       m.chat,
-      "👋 Saliendo del grupo...\n🤖 SonGokuBot",
+      "👋 Saliendo del Dojo grupal...\n🌀 Gohan beast 🐉",
       m
     )
 
@@ -41,6 +41,6 @@ handler.command = ["salirgrupo"]
 handler.tags = ["owner"]
 handler.help = ["salirgrupo"]
 handler.owner = true
-handler.group = true
+handler.group = false
 
 export default handler
