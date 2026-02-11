@@ -3,7 +3,7 @@ import chalk from 'chalk'
 import { fileURLToPath } from 'url'
 
 global.owner = [
-  ['5492644138998', 'wilker', true],
+  ['5492644138998', '𝚆𝙸𝙻𝙺𝙴𝚁', true],
   ['584125877491'],
   ['156981591593126'],
   ['595972314588']
@@ -12,10 +12,10 @@ global.owner = [
 global.mods = []
 global.prems = []
 
-global.namebot = 'Gohan beast🚀'
-global.packname = 'Gohan-bot 🔵'
-global.author = 'wilker | © 2026 '
-global.moneda = 'Esferas del dragón'
+global.namebot = '𝙶𝙾𝙷𝙰𝙽 𝙱𝙴𝙰𝚂𝚃 🌀'
+global.packname = '𝙶𝙾𝙷𝙰𝙽-𝙱𝙴𝙰𝚂𝚃 🐉'
+global.author = '𝚆𝙸𝙻𝙺𝙴𝚁 | © 2026 '
+global.moneda = '𝙶𝙾𝙷𝙰𝙽 𝙱𝙴𝙰𝚂𝚃'
 
 global.libreria = 'Baileys'
 global.baileys = 'V 6.7.16'
