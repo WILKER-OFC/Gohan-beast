@@ -20,8 +20,8 @@ global.moneda = '𝙶𝙾𝙷𝙰𝙽 𝙱𝙴𝙰𝚂𝚃'
 global.libreria = 'Baileys'
 global.baileys = 'V 6.7.16'
 global.vs = '2.2.0'
-global.sessions = '𝚂𝚎𝚜𝚜𝚒𝚘𝚗𝚜'
-global.jadi = '𝚂𝚄𝙱𝚂𝙰𝙸𝚈𝙰𝙽'
+global.sessions = 'Sessions'
+global.jadi = 'Subsaiyan'
 global.yukiJadibts = true
 
 global.namecanal = '❇️'
