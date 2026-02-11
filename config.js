@@ -14,14 +14,14 @@ global.prems = []
 
 global.namebot = '𝙶𝙾𝙷𝙰𝙽 𝙱𝙴𝙰𝚂𝚃 🌀'
 global.packname = '𝙶𝙾𝙷𝙰𝙽-𝙱𝙴𝙰𝚂𝚃 🐉'
-global.author = '𝚆𝙸𝙻𝙺𝙴𝚁 | © 2026 '
+global.author = '𝚆𝙸𝙻𝙺𝙴𝚁 | © 𝟸𝟶𝟸𝟼 '
 global.moneda = '𝙶𝙾𝙷𝙰𝙽 𝙱𝙴𝙰𝚂𝚃'
 
 global.libreria = 'Baileys'
 global.baileys = 'V 6.7.16'
 global.vs = '2.2.0'
-global.sessions = 'Sessions'
-global.jadi = 'JadiBots'
+global.sessions = '𝚂𝚎𝚜𝚜𝚒𝚘𝚗𝚜'
+global.jadi = '𝚂𝚄𝙱𝚂𝙰𝙸𝚈𝙰𝙽'
 global.yukiJadibts = true
 
 global.namecanal = '❇️'
@@ -40,6 +40,6 @@ global.maxwarn = 2
 let file = fileURLToPath(import.meta.url)
 watchFile(file, () => {
   unwatchFile(file)
-  console.log(chalk.redBright("🔄 Se actualizó 'config.js'"))
+  console.log(chalk.redBright("🐉 Se actualizó 'config.js'"))
   import(`file://${file}?update=${Date.now()}`)
 })
