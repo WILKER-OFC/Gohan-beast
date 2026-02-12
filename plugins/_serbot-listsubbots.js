@@ -1,99 +1,73 @@
-import fs from 'fs'
+import fs from 'fs';
+import path from 'path';
+import ws from 'ws';
+import { fileURLToPath } from 'url';
 
-let handler = async (m, { conn }) => {
-  let uniqueUsers = new Map()
+const filename = fileURLToPath(import.meta.url);
+const dirname = path.dirname(filename);
 
-  if (!global.conns || !Array.isArray(global.conns)) global.conns = []
-
-  for (const connSub of global.conns) {
-    if (connSub.user && connSub.state === 'open') {
-      const jid = connSub.user.jid
-      const numero = jid?.split('@')[0]
-      let nombre = connSub.user.name
-      if (!nombre && typeof conn.getName === 'function') {
-        try {
-          nombre = await conn.getName(jid)
-        } catch {
-          nombre = `Usuario ${numero}`
-        }
-      }
-      uniqueUsers.set(jid, {
-        nombre: nombre || `Usuario ${numero}`,
-        numero,
-        fecha: connSub.user.registro || 'Desconocida'
-      })
+export default {
+  command: ['bots', 'sockets'],
+  category: 'socket',
+  run: async (client, m) => {
+    const botId = client.user.id.split(':')[0] + '@s.whatsapp.net'
+    const bot = global.db.data.settings[botId]
+    const botname = bot.botname
+    const namebot = bot.namebot
+    const banner = bot.icon
+    const from = m.key.remoteJid
+    const groupMetadata = m.isGroup ? await client.groupMetadata(from).catch(() => {}) : ''
+    const groupParticipants = groupMetadata?.participants?.map((p) => p.phoneNumber || p.jid || p.lid || p.id) || []
+    const mainBotJid = global.client.user.id.split(':')[0] + '@s.whatsapp.net'
+    const isMainBotInGroup = groupParticipants.includes(mainBotJid)
+    const basePath = path.join(dirname, '../../Sessions')
+    const getBotsFromFolder = (folderName) => {
+      const folderPath = path.join(basePath, folderName)
+      if (!fs.existsSync(folderPath)) return []
+      return fs.readdirSync(folderPath).filter((dir) => {
+          const credsPath = path.join(folderPath, dir, 'creds.json')
+          return fs.existsSync(credsPath)
+        }).map((id) => id.replace(/\D/g, ''))
     }
-  }
-
-  const uptime = process.uptime() * 1000
-  const formatUptime = clockString(uptime)
-  const totalUsers = uniqueUsers.size
-
-  // Estilo Gohan Beast
-  let txt = `╔══════════════════╗\n`
-  txt += `   ⚡ *GO-HAN BEAST BOT* ⚡\n`
-  txt += `╚══════════════════╝\n\n`
-  txt += `🌀 *Tiempo Activo:* ${formatUptime}\n`
-  txt += `👥 *Sub-Bots Conectados:* ${totalUsers}\n\n`
-
-  let mentions = []
-
-  if (totalUsers > 0) {
-    txt += `╔═════════════════════╗\n`
-    txt += `       📊 *LISTA ACTIVA*\n`
-    txt += `╚═════════════════════╝\n\n`
-
-    let i = 1
-    for (const [jid, data] of uniqueUsers) {
-      const powerLevel = Math.floor(Math.random() * 9000) + 1000 // Nivel de poder aleatorio estilo DB
-
-      txt += `▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰\n`
-      txt += `✨ *SUB-BOT #${i++}*\n`
-      txt += `➤ 🆔 *ID:* @${data.numero}\n`
-      txt += `➤ 👤 *Nombre:* ${data.nombre}\n`
-      txt += `➤ ⚡ *Poder:* ${powerLevel.toLocaleString()}\n`
-      txt += `➤ 📅 *Registro:* ${data.fecha}\n`
-      txt += `▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰\n\n`
-      mentions.push(jid)
+    const subs = getBotsFromFolder('Subs')
+    const categorizedBots = { Owner: [], Sub: [] }
+    const mentionedJid = []
+    const formatBot = (number, label) => {
+      const jid = number + '@s.whatsapp.net'
+      if (!groupParticipants.includes(jid)) return null
+      mentionedJid.push(jid)
+      const data = global.db.data.settings[jid]
+      const name = data?.namebot || 'Bot'
+      const handle = `@${number}`
+      return `- [${label} *${name}*] › ${handle}`
     }
-  } else {
-    txt += `╔══════════════════╗\n`
-    txt += `       ⚠️ *SIN ACTIVIDAD*\n`
-    txt += `╚══════════════════╝\n\n`
-    txt += `Actualmente no hay sub-bots conectados.\n¡Conviértete en el primero! 🥋`
-  }
-
-  // Emojis de Dragon Ball
-  const beastEmojis = ['⚡', '🔥', '🌀', '💥', '🌟', '🥋', '🐉']
-  const randomEmoji = beastEmojis[Math.floor(Math.random() * beastEmojis.length)]
-
-  txt += `\n${randomEmoji} *¡GO-HAN BEAST LISTO PARA LA BATALLA!* ${randomEmoji}`
-
-  await conn.reply(m.chat, txt.trim(), m, { 
-    mentions,
-    contextInfo: {
-      externalAdReply: {
-        title: '⚡ GO-HAN BEAST BOT ⚡',
-        body: `Total: ${totalUsers} Sub-Bots`,
-        thumbnailUrl: 'https://i.ibb.co/whVQPKpy/Km0pq-UM.jpg',
-        sourceUrl: 'https://whatsapp.com/channel/0029Vb7ntULLY6d8uOvyDy0C',
-        mediaType: 1,
-        renderLargerThumbnail: true
+    if (global.db.data.settings[mainBotJid]) {
+      const name = global.db.data.settings[mainBotJid].namebot
+      const handle = `@${mainBotJid.split('@')[0]}`
+      if (isMainBotInGroup) {
+        mentionedJid.push(mainBotJid)
+        categorizedBots.Owner.push(`- [Owner *${name}*] › ${handle}`)
       }
     }
-  })
-}
-
-handler.command = ['listbots', 'bots', 'gohanlist', 'sublist']
-handler.help = ['listbots']
-handler.tags = ['serbot']
-
-export default handler
-
-function clockString(ms) {
-  const d = Math.floor(ms / 86400000)
-  const h = Math.floor(ms / 3600000) % 24
-  const m = Math.floor(ms / 60000) % 60
-  const s = Math.floor(ms / 1000) % 60
-  return `${d}d ${h}h ${m}m ${s}s`
-}
+    subs.forEach((num) => {
+      const line = formatBot(num, 'Sub')
+      if (line) categorizedBots.Sub.push(line)
+    })
+    const totalCounts = {
+      Owner: global.db.data.settings[mainBotJid] ? 1 : 0,
+      Sub: subs.length,
+    }
+    const totalBots = totalCounts.Owner + totalCounts.Sub
+    const totalInGroup = categorizedBots.Owner.length + categorizedBots.Sub.length
+    let message = `ꕥ Números de Sockets activos *(${totalBots})*\n\n`
+    message += `🐉 Principales › *${totalCounts.Owner}*\n`
+    message += `🌀 Subs › *${totalCounts.Sub}*\n\n`
+    message += `➭ *sub Saiyans en el grupo 🌀 ›* ${totalInGroup}\n`
+    for (const category of ['Owner', 'Sub']) {
+      if (categorizedBots[category].length) {
+        message += categorizedBots[category].join('\n') + '\n'
+      }
+    }
+    await client.sendContextInfoIndex(m.chat, message, {}, m, true, mentionedJid)
+  },
+};
