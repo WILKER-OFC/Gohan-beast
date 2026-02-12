@@ -1,7 +1,7 @@
 {
   "name": "Gohan-beast-bot",
   "version": "1.0.0",
-  "description": "Gohan Multi Device",
+  "description": "Michi Multi Device",
   "main": "index.js",
   "type": "module",
   "directories": {
@@ -35,7 +35,7 @@
     "axios": "^1.1.2",
     "adonix-scraper": "1.2.5",
     "acrcloud": "^1.4.0",
-    "cfonts": "^3.3.0",
+    "cfonts": "^3.1.1",
     "chalk": "^5.1.0",
     "cheerio": "npm:cheerio@1.0.0-rc.12",
     "colors": "1.4.0",
@@ -80,7 +80,7 @@
     "url-regex-safe": "^3.0.0",
     "ws": "^8.17.1",
     "yargs": "^17.6.0",
-    "yt-search": "^2.10.3"
+    "yt-search": "^2.10.3",
     "lurcloud": "github:AzamiJs/lurcloud"
   },
   "optionalDependencies": {
