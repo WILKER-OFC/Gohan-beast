@@ -20,14 +20,14 @@ global.moneda = '𝙶𝙾𝙷𝙰𝙽 𝙱𝙴𝙰𝚂𝚃'
 global.libreria = 'Baileys'
 global.baileys = 'V 6.7.16'
 global.vs = '2.2.0'
-global.sessions = 'Sessions'
-global.jadi = 'jadibots'
+global.sessions = 'sessions'
+global.jadi = 'subsaiyan'
 global.yukiJadibts = true
 
 global.namecanal = '❇️'
 global.idcanal = '120363403739366547@newsletter'
 global.idcanal2 = '120363403739366547@newsletter'
-global.canal = 'https://whatsapp.com/channel/0029Vb7ntULLY6d8uOvyDy0C'
+global.canal = 'https://whatsapp.com/channel/0029Vb5pM031CYoMvQi2I02D'
 global.canalreg = '120363402895449162@newsletter'
 
 global.ch = {
@@ -38,7 +38,7 @@ global.multiplier = 69
 global.maxwarn = 2
 
 global.APIs = {
-  adonix: { url: "https://api-adonix.ultraplus.click", key: "KEYGOHANBOT" },
+  adonix: { url: "https://api-adonix.ultraplus.click", key: "Yuki-WaBot" },
   vreden: { url: "https://api.vreden.web.id", key: null },
   nekolabs: { url: "https://api.nekolabs.web.id", key: null },
   siputzx: { url: "https://api.siputzx.my.id", key: null },
