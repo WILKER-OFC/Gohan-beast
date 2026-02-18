@@ -133,7 +133,7 @@ let handler = async (m, { conn, participants, isOwner, isAdmin }) => {
 
 // CONFIGURACIÓN DEL COMANDO
 handler.command = ['invocar', 'invocacion', 'invocarbeast', 'llamartodos', 'mencionartodos']
-handler.tags = ['admin', 'beastmode']
+handler.tags = ['grupo', 'owner']
 handler.help = ['invocar']
 handler.group = true
 handler.admin = true
