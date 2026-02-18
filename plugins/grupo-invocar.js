@@ -76,7 +76,7 @@ let handler = async (m, { conn, participants, isOwner, isAdmin }) => {
           title: '⚡ GOHAN BEAST - INVOCACIÓN TOTAL ⚡',
           body: `${mentions.length} guerreros invocados`,
           thumbnailUrl: 'https://i.ibb.co/5W7YrD6J/IMG-20260215-WA0190.jpg',
-          sourceUrl: 'https://github.com',
+          sourceUrl: 'https://github.com/WILKER-OFC/Gohan-beast',
           mediaType: 1,
           renderLargerThumbnail: true
         }
