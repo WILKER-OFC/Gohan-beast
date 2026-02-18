@@ -4,7 +4,7 @@ let handler = async (m, { conn, participants, isOwner, isAdmin }) => {
   try {
     // Verificar permisos
     if (!m.isGroup) {
-      return conn.reply(m.chat, '🌀 *MODO GOHAN BEAST*\n\nEste poder solo puede ser invocado en grupos, ¡bro!', m)
+      return conn.reply(m.chat, '🌀 *GOHAN BEAST*\n\nEste poder solo puede ser invocado en grupos, ¡bro!', m)
     }
 
     // Verificar si el usuario es admin/owner
@@ -52,19 +52,19 @@ let handler = async (m, { conn, participants, isOwner, isAdmin }) => {
       '⏱️ *Tiempo:* ' + tiempoInvocacion.toFixed(2) + 's\n' +
       '📅 *Fecha:* ' + new Date().toLocaleDateString() + '\n\n' +
 
-      '🌀 *LISTA COMPLETA DE GUERREROS:*\n' +
+      '🌀 *LISTA DE GUERREROS:*\n' +
       '┏━━━━━━━━━━━━━━━━━━\n' +
       listaCompleta + '\n' +
       '┗━━━━━━━━━━━━━━━━━━\n\n' +
 
-      '🔥 *EFECTO DE ONDA EXPANSIVA:*\n' +
+      '🔥 *ONDA EXPANSIVA:*\n' +
       '`⚡⚡⚡⚡⚡ Energía máxima`\n' +
       '`🌀🌀🌀🌀🌀 Propagación divina`\n' +
       '`✨✨✨✨✨ Poder infinito`\n\n' +
 
-      '✨ *¡TODOS HAN SIDO INVOCADO!* ✨\n\n' +
+      '✨ *¡HAN SIDOS INVOCADOS!* ✨\n\n' +
 
-      '`⚡ Poder fluyendo... Gohan Beast activado ⚡`'
+      '`⚡ Poder Gohan Beast activado ⚡`'
 
     // ENVIAR UN SOLO MENSAJE CON TODOS MENCIONADOS
     await conn.sendMessage(m.chat, {
