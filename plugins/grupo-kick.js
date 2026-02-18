@@ -2,7 +2,7 @@ let handler = async (m, { conn, participants, isOwner, isAdmin }) => {
   try {
     // Verificar si es grupo
     if (!m.isGroup) {
-      return conn.reply(m.chat, '🌀 *MODO GOHAN BEAST*\n\nEste poder solo puede ser usado en grupos, ¡bro!', m)
+      return conn.reply(m.chat, '🌀 *GOHAN BEAST*\n\nEste poder solo puede ser usado en grupos, ¡bro!', m)
     }
 
     // Verificar permisos de admin
@@ -85,9 +85,9 @@ let handler = async (m, { conn, participants, isOwner, isAdmin }) => {
     const tiempoEjecucion = (Date.now() - inicio) / 1000
 
     const mensajeExpulsion = 
-      '╔════════════════════════╗\n' +
+      '╔════════════════════╗\n' +
       '║    𝗘𝗫𝗣𝗨𝗟𝗦𝗜𝗢𝗡 𝗗𝗜𝗩𝗜𝗡𝗔    ║\n' +
-      '╚════════════════════════╝\n\n' +
+      '╚════════════════════╝\n\n' +
       
       '💥 *¡GOHAN BEAST HA HABLADO!* 💥\n\n' +
       
@@ -185,7 +185,7 @@ let handler = async (m, { conn, participants, isOwner, isAdmin }) => {
 
 // CONFIGURACIÓN DEL COMANDO
 handler.command = ['kick', 'expulsar', 'echar', 'kickbeast', 'expulsiondivina']
-handler.tags = ['admin', 'beastmode']
+handler.tags = ['grupo', 'owner']
 handler.help = ['kick (respondiendo a un mensaje)']
 handler.group = true
 handler.admin = true
