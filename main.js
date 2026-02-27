@@ -1,3 +1,4 @@
+// 🐉⚡ GOHAN BEAST MODE - MAIN BOT ⚡🐉
 import fs from 'fs'
 import path, { join } from 'path';
 import { fileURLToPath, pathToFileURL } from 'url';
@@ -20,11 +21,13 @@ import qrcode from 'qrcode-terminal';
 import { spawn } from 'child_process';
 import { setInterval } from 'timers';
 
+// Configuración inicial del entorno
 process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = '1';
 process.env.TMPDIR = path.join(process.cwd(), 'tmp');
 
 if (!fs.existsSync(process.env.TMPDIR)) {
   fs.mkdirSync(process.env.TMPDIR, { recursive: true });
+  console.log(chalk.green('✅ Directorio temporal creado'));
 }
 
 import './config.js';
@@ -42,9 +45,11 @@ const {
 
 const PORT = process.env.PORT || process.env.SERVER_PORT || 3000;
 
+// Serialización de prototipos
 protoType();
 serialize();
 
+// Utilidades globales
 global.__filename = function filename(pathURL = import.meta.url, rmPrefix = platform !== 'win32') {
   return rmPrefix ? /file:\/\/\//.test(pathURL) ? fileURLToPath(pathURL) : pathURL : pathToFileURL(pathURL).toString();
 };
@@ -55,6 +60,7 @@ global.__require = function require(dir = import.meta.url) {
   return createRequire(dir);
 };
 
+// API helper
 global.API = (name, path = '/', query = {}, apikeyqueryname) =>
   (name in global.APIs ? global.APIs[name] : name) +
   path +
@@ -72,6 +78,14 @@ global.timestamp = { start: new Date() };
 
 const __dirname = global.__dirname(import.meta.url);
 
+// Banner de Gohan Bestia al iniciar main.js
+console.log(chalk.bold.cyan('\n' + '═'.repeat(60)));
+console.log(chalk.bold.yellow('   🐉⚡ GOHAN BESTIA - PODER MÁXIMO ACTIVADO ⚡🐉'));
+console.log(chalk.bold.cyan('═'.repeat(60)));
+console.log(chalk.magenta('   「¡Este es mi poder definitivo! No me detendré hasta proteger a todos」'));
+console.log(chalk.bold.cyan('═'.repeat(60) + '\n'));
+
+// Parsing de argumentos
 global.opts = new Object(yargs(process.argv.slice(2)).exitProcess(false).parse());
 global.prefix = new RegExp(
   '^[' +
@@ -79,16 +93,15 @@ global.prefix = new RegExp(
     ']'
 );
 
+// Configuración de base de datos
 global.db = new Low(new JSONFile(`storage/databases/database.json`));
 
-// --- INICIO DE CAMBIO PARA OPTIMIZACIÓN ---
-// Variable para rastrear si la base de datos ha sido modificada.
+// --- OPTIMIZACIÓN DE BASE DE DATOS ---
 global.isDatabaseModified = false;
-// Función para marcar la base de datos como modificada.
 global.markDatabaseModified = () => {
   global.isDatabaseModified = true;
 };
-// --- FIN DE CAMBIO PARA OPTIMIZACIÓN ---
+// --- FIN OPTIMIZACIÓN ---
 
 global.DATABASE = global.db;
 global.loadDatabase = async function loadDatabase() {
@@ -116,31 +129,33 @@ global.loadDatabase = async function loadDatabase() {
   };
   global.db.chain = lodash.chain(global.db.data);
 
-  // --- INICIO DE CAMBIO PARA OPTIMIZACIÓN ---
-  // Sobrescribir los métodos de la base de datos para que marquen los cambios.
+  // --- OPTIMIZACIÓN DE ESCRITURA ---
   const originalSet = global.db.chain.set.bind(global.db.chain);
   global.db.chain.set = (...args) => {
     const result = originalSet(...args);
     global.markDatabaseModified();
     return result;
   };
-  // También se pueden envolver otras operaciones de escritura si es necesario.
-  // --- FIN DE CAMBIO PARA OPTIMIZACIÓN ---
+  // --- FIN OPTIMIZACIÓN ---
 };
 
+// Configuración de autenticación
 global.authFile = `sessions`;
 const { state, saveCreds } = await useMultiFileAuthState(global.authFile);
 
 const { version } = await fetchLatestBaileysVersion();
 
+// Interfaz de línea de comandos
 const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
 const question = (texto) => new Promise((resolver) => rl.question(texto, resolver));
 
+// Logger configurado
 const logger = pino({
   timestamp: () => `,"time":"${new Date().toJSON()}"`,
 }).child({ class: 'client' });
 logger.level = 'fatal';
 
+// Opciones de conexión
 const connectionOptions = {
   version: version,
   logger,
@@ -166,30 +181,32 @@ const connectionOptions = {
   },
 };
 
+// Conexión principal
 global.conn = makeWASocket(connectionOptions);
-
 global.conns = global.conns || [];
 
+// Cargar handler
 let handler;
 try {
   const handlerModule = await import('./handler.js');
   handler = handlerModule.handler;
+  console.log(chalk.green('✅ Handler cargado correctamente'));
 } catch (e) {
   console.error(chalk.red('[ERROR] No se pudo cargar el handler principal:'), e);
   process.exit(1);
 }
 
 /**
- * Función para reconectar un sub-bot y asignarle un manejador de mensajes.
- * @param {string} botPath - Ruta completa a la carpeta de sesión del sub-bot.
+ * Función para reconectar un sub-bot
+ * @param {string} botPath - Ruta de la sesión del sub-bot
  */
 async function reconnectSubBot(botPath) {
-  console.log(chalk.yellow(`[DEBUG] Intentando reconectar sub-bot en: ${path.basename(botPath)}`));
+  console.log(chalk.yellow(`🌀 [GOHAN BESTIA] Despertando poder secundario en: ${path.basename(botPath)}`));
   try {
     const { state: subBotState, saveCreds: saveSubBotCreds } = await useMultiFileAuthState(botPath);
 
     if (!subBotState.creds.registered) {
-      console.warn(chalk.yellow(`[DEBUG] Advertencia: El sub-bot en ${path.basename(botPath)} no está registrado. Salto la conexión.`));
+      console.warn(chalk.yellow(`⚠️ [GOHAN BESTIA] Poder secundario en ${path.basename(botPath)} no está registrado`));
       return;
     }
 
@@ -218,112 +235,119 @@ async function reconnectSubBot(botPath) {
     subBotConn.ev.on('connection.update', (update) => {
       const { connection, lastDisconnect } = update;
       if (connection === 'open') {
-        console.log(chalk.green(`[DEBUG] Sub-bot conectado correctamente: ${path.basename(botPath)}`));
+        console.log(chalk.green(`✨ [GOHAN BESTIA] Poder secundario despertado: ${path.basename(botPath)}`));
         const yaExiste = global.conns.some(c => c.user?.jid === subBotConn.user?.jid);
         if (!yaExiste) {
           global.conns.push(subBotConn);
-          console.log(chalk.green(`🌀 [DEBUG] Sub-bot agregado a global.conns: ${subBotConn.user?.jid}`));
+          console.log(chalk.green(`⚡ [GOHAN BESTIA] Poder fusionado: ${subBotConn.user?.jid}`));
         }
       } else if (connection === 'close') {
         const reason = new Boom(lastDisconnect?.error)?.output?.statusCode;
-        console.error(chalk.red(`[DEBUG] Sub-bot desconectado en ${path.basename(botPath)}. Razón: ${reason}`));
+        console.error(chalk.red(`💥 [GOHAN BESTIA] Poder secundario disminuido en ${path.basename(botPath)}. Razón: ${reason}`));
 
-        // --- INICIO DE CAMBIO IMPORTANTE: Manejo de desconexión permanente ---
         if (reason === DisconnectReason.loggedOut || reason === 401) {
-          console.log(chalk.red(`❌ [DEBUG] Desconexión permanente detectada. Eliminando sesión del sub-bot en ${path.basename(botPath)}.`));
-          // Eliminar de global.conns
+          console.log(chalk.red(`❌ [GOHAN BESTIA] Desconexión permanente. Eliminando poder secundario en ${path.basename(botPath)}.`));
           global.conns = global.conns.filter(conn => conn.user?.jid !== subBotConn.user?.jid);
-          // Eliminar carpeta de sesión del filesystem
           try {
             rmSync(botPath, { recursive: true, force: true });
-            console.log(chalk.red(`✅ [DEBUG] Carpeta de sesión eliminada correctamente: ${botPath}`));
+            console.log(chalk.green(`✅ [GOHAN BESTIA] Poder secundario eliminado: ${botPath}`));
           } catch (e) {
-            console.error(chalk.red(`❌ [ERROR] No se pudo eliminar la carpeta de sesión ${botPath}: ${e}`));
+            console.error(chalk.red(`❌ [ERROR] No se pudo eliminar poder secundario ${botPath}: ${e}`));
           }
         }
-        // --- FIN DE CAMBIO IMPORTANTE ---
       }
     });
+    
     subBotConn.ev.on('creds.update', saveSubBotCreds);
-
     subBotConn.handler = handler.bind(subBotConn);
     subBotConn.ev.on('messages.upsert', subBotConn.handler);
-    console.log(chalk.blue(`[DEBUG] Manejador asignado correctamente al sub-bot: ${path.basename(botPath)}`));
+    console.log(chalk.blue(`🌀 [GOHAN BESTIA] Manejador asignado a poder secundario: ${path.basename(botPath)}`));
 
     if (!global.subBots) {
       global.subBots = {};
     }
     global.subBots[path.basename(botPath)] = subBotConn;
-    console.log(chalk.yellow(`[DEBUG] Paso 5: Sub-bot ${path.basename(botPath)} procesado y almacenado.`));
 
   } catch (e) {
-    console.error(chalk.red(`[DEBUG] Error fatal al intentar reconectar sub-bot en ${path.basename(botPath)}:`), e);
+    console.error(chalk.red(`💥 [ERROR GOHAN BESTIA] Error al despertar poder secundario en ${path.basename(botPath)}:`), e);
   }
 }
 
 /**
- * Función para iniciar la reconexión de todos los sub-bots.
+ * Iniciar todos los sub-bots
  */
 async function startSubBots() {
   const rutaJadiBot = join(__dirname, './JadiBots');
 
   if (!existsSync(rutaJadiBot)) {
     mkdirSync(rutaJadiBot, { recursive: true });
-    console.log(chalk.bold.cyan(`La carpeta: ${rutaJadiBot} se creó correctamente.`));
+    console.log(chalk.bold.cyan(`📁 [GOHAN BESTIA] Cámara de gravedad creada: ${rutaJadiBot}`));
   } else {
-    console.log(chalk.bold.cyan(`La carpeta: ${rutaJadiBot} ya está creada.`));
+    console.log(chalk.bold.cyan(`📁 [GOHAN BESTIA] Cámara de gravedad detectada: ${rutaJadiBot}`));
   }
 
   const readRutaJadiBot = readdirSync(rutaJadiBot);
   if (readRutaJadiBot.length > 0) {
     const credsFile = 'creds.json';
-    console.log(chalk.magenta(`[DEBUG] Iniciando proceso de reconexión de sub-bots. Total de directorios encontrados: ${readRutaJadiBot.length}`));
+    console.log(chalk.magenta(`🌀 [GOHAN BESTIA] Buscando poders secundarios... Total: ${readRutaJadiBot.length}`));
+    
     for (const subBotDir of readRutaJadiBot) {
       const botPath = join(rutaJadiBot, subBotDir);
       if (statSync(botPath).isDirectory()) {
         const readBotPath = readdirSync(botPath);
         if (readBotPath.includes(credsFile)) {
-          console.log(chalk.magenta(`[DEBUG] Se encontró 'creds.json' en ${subBotDir}. Intentando reconectar...`));
+          console.log(chalk.magenta(`⚡ [GOHAN BESTIA] Poder detectado en ${subBotDir}. Despertando...`));
           await reconnectSubBot(botPath);
         } else {
-          console.log(chalk.yellow(`[DEBUG] No se encontró 'creds.json' en ${subBotDir}. Este sub-bot puede no estar registrado o la sesión es inválida.`));
+          console.log(chalk.yellow(`⚠️ [GOHAN BESTIA] Poder latente en ${subBotDir} (sin creds.json)`));
         }
-      } else {
-        console.log(chalk.gray(`[DEBUG] '${subBotDir}' en JadiBots no es un directorio, saltando.`));
       }
     }
-    console.log(chalk.magenta(`[DEBUG] Proceso de reconexión de sub-bots finalizado.`));
+    console.log(chalk.magenta(`✅ [GOHAN BESTIA] Proceso de despertar de poderes completado.`));
   } else {
-    console.log(chalk.gray(`[DEBUG] No se encontraron carpetas de sub-bots en ${rutaJadiBot}.`));
+    console.log(chalk.gray(`🌙 [GOHAN BESTIA] No hay poders secundarios para despertar.`));
   }
 }
 
+// Iniciar sub-bots
 await startSubBots();
 
+/**
+ * Manejar el login del bot principal
+ */
 async function handleLogin() {
   if (conn.authState.creds.registered) {
-    console.log(chalk.green('Sesión principal ya registrada.'));
+    console.log(chalk.green('✅ [GOHAN BESTIA] Poder principal ya registrado.'));
     return;
   }
 
   let loginMethod = await question(
-    chalk.green(
-      `🔱 Holas \n` +
-      `🌀 Escribe "code" para iniciar Gohan beast..\n` +
-      `> `
-    )
-  );
+    chalk.green(`\n` +
+    `╔════════════════════════════════════╗\n` +
+    `║     🐉 GOHAN BESTIA MODE 🐉       ║\n` +
+    `╠════════════════════════════════════╣\n` +
+    `║ ¿Cómo deseas activar el poder?     ║\n` +
+    `║                                    ║\n` +
+    `║ 📱 Escribe "code" para código      ║\n` +
+    `║    de emparejamiento               ║\n` +
+    `║                                    ║\n` +
+    `║ 🔳 Presiona Enter para QR          ║\n` +
+    `╚════════════════════════════════════╝\n` +
+    `\n` +
+    `> `
+  ));
 
   loginMethod = loginMethod.toLowerCase().trim();
 
   if (loginMethod === 'code') {
-    let phoneNumber = await question(chalk.red('🔥 Ingresa el número de WhatsApp donde estará el bot (incluye código país, ej: 549XXXXXXXXXX):\n'));
+    let phoneNumber = await question(chalk.cyan('📱 Ingresa el número de WhatsApp (con código país, ej: 5215551234567):\n> '));
     phoneNumber = phoneNumber.replace(/\D/g, '');
 
+    // Formateo para México
     if (phoneNumber.startsWith('52') && phoneNumber.length === 12) {
       phoneNumber = `521${phoneNumber.slice(2)}`;
     } else if (phoneNumber.startsWith('52') && phoneNumber.length === 10) {
-      phoneNumber = `521${phoneNumber.slice(2)}`;
+      phoneNumber = `521${phoneNumber}`;
     } else if (phoneNumber.startsWith('0')) {
       phoneNumber = phoneNumber.replace(/^0/, '');
     }
@@ -331,39 +355,48 @@ async function handleLogin() {
     if (typeof conn.requestPairingCode === 'function') {
       try {
         if (conn.ws.readyState === ws.OPEN) {
+          console.log(chalk.yellow('🌀 Generando código de emparejamiento...'));
           let code = await conn.requestPairingCode(phoneNumber);
           code = code?.match(/.{1,4}/g)?.join('-') || code;
-          console.log(chalk.cyan('Tu código de emparejamiento es:', code));
+          console.log(chalk.bold.green('\n════════════════════════════════════'));
+          console.log(chalk.bold.yellow(`   🔐 CÓDIGO DE EMPAREJAMIENTO:`));
+          console.log(chalk.bold.cyan(`      ${code}`));
+          console.log(chalk.bold.green('════════════════════════════════════\n'));
         } else {
-          console.log(chalk.red('La conexión principal no está abierta. Intenta nuevamente.'));
+          console.log(chalk.red('❌ La conexión principal no está abierta. Intenta nuevamente.'));
         }
       } catch (e) {
-        console.log(chalk.red('Error al solicitar código de emparejamiento:'), e.message || e);
+        console.log(chalk.red('❌ Error al solicitar código de emparejamiento:'), e.message || e);
       }
     } else {
-      console.log(chalk.red('Tu versión de Baileys no soporta emparejamiento por código.'));
+      console.log(chalk.red('❌ Tu versión de Baileys no soporta emparejamiento por código.'));
     }
   } else {
-    console.log(chalk.yellow('Generando código QR, escanéalo con tu WhatsApp...'));
+    console.log(chalk.yellow('🔳 Generando código QR, escanéalo con tu WhatsApp...\n'));
     conn.ev.on('connection.update', ({ qr }) => {
-      if (qr) qrcode.generate(qr, { small: true });
+      if (qr) {
+        console.log(chalk.green('📱 ESCANEA ESTE CÓDIGO QR:'));
+        qrcode.generate(qr, { small: true });
+        console.log(chalk.yellow('\n⏳ Esperando escaneo...\n'));
+      }
     });
   }
 }
 
+// Ejecutar login
 await handleLogin();
 
 conn.isInit = false;
 conn.well = false;
 
+// Intervalo de optimización de base de datos
 if (!opts['test']) {
   if (global.db) {
-    // --- INICIO DE CAMBIO PARA OPTIMIZACIÓN DE BASE DE DATOS ---
-    // Optimización de la base de datos: solo escribe si hay cambios.
     setInterval(async () => {
       if (global.db.data && global.isDatabaseModified) {
         await global.db.write();
-        global.isDatabaseModified = false; // Resetear la bandera
+        global.isDatabaseModified = false;
+        console.log(chalk.gray('💾 [GOHAN BESTIA] Base de datos guardada'));
       }
       if (opts['autocleartmp']) {
         const tmp = [tmpdir(), 'tmp', 'serbot'];
@@ -371,102 +404,123 @@ if (!opts['test']) {
           spawn('find', [filename, '-amin', '3', '-type', 'f', '-delete']);
         });
       }
-    }, 30 * 1000); // Se mantiene el intervalo de 30 segundos, pero ahora es más eficiente.
-    // --- FIN DE CAMBIO PARA OPTIMIZACIÓN DE BASE DE DATOS ---
+    }, 30 * 1000);
   }
 }
 
+/**
+ * Limpiar archivos temporales
+ */
 function clearTmp() {
   const tmp = [join(__dirname, './tmp')];
   const filename = [];
   tmp.forEach((dirname) => readdirSync(dirname).forEach((file) => filename.push(join(dirname, file))));
   return filename.map((file) => {
     const stats = statSync(file);
-    if (stats.isFile() && Date.now() - stats.mtimeMs >= 1000 * 60 * 1) return unlinkSync(file); // Más agresivo, elimina archivos de 1 minuto
+    if (stats.isFile() && Date.now() - stats.mtimeMs >= 1000 * 60 * 1) return unlinkSync(file);
     return false;
   });
 }
 
-// --- INICIO DE CAMBIO PARA OPTIMIZACIÓN DE TEMPORALES ---
-// Limpiar la carpeta temporal con más frecuencia (cada 3 minutos).
+// Limpieza de temporales cada 3 minutos
 setInterval(() => {
   if (global.stopped === 'close' || !conn || !conn.user) return;
   clearTmp();
-}, 180000); // 180000 ms = 3 minutos
-// --- FIN DE CAMBIO PARA OPTIMIZACIÓN DE TEMPORALES ---
+  console.log(chalk.gray('🧹 [GOHAN BESTIA] Limpieza temporal completada'));
+}, 180000);
 
-// --- INICIO DE CAMBIO: Optimización de memoria ---
-// Ejecutar el recolector de basura de Node.js a intervalos más frecuentes.
+// Recolección de basura si está disponible
 if (typeof global.gc === 'function') {
   setInterval(() => {
-    console.log(chalk.gray(`[DEBUG] Ejecutando recolección de basura...`));
+    console.log(chalk.gray(`🧠 [GOHAN BESTIA] Optimizando poder...`));
     global.gc();
-  }, 180000); // Cada 3 minutos (180000 ms), más frecuente para baja memoria.
+  }, 180000);
 } else {
-  console.log(chalk.yellow(`[WARN] La recolección de basura no está disponible. Para habilitarla, ejecuta Node.js con la bandera --expose-gc.`));
+  console.log(chalk.yellow(`⚠️ [GOHAN BESTIA] Para optimizar memoria, ejecuta con --expose-gc`));
 }
-// --- FIN DE CAMBIO ---
 
+/**
+ * Manejar actualizaciones de conexión
+ */
 async function connectionUpdate(update) {
   const { connection, lastDisconnect, isNewLogin } = update;
   global.stopped = connection;
-  if (isNewLogin) conn.isInit = true;
+  
+  if (isNewLogin) {
+    conn.isInit = true;
+    console.log(chalk.green('✅ [GOHAN BESTIA] Nuevo login detectado'));
+  }
+  
   const code =
     lastDisconnect?.error?.output?.statusCode ||
     lastDisconnect?.error?.output?.payload?.statusCode;
+    
   if (code && code !== DisconnectReason.loggedOut && conn?.ws.socket == null) {
     await global.reloadHandler(true).catch(console.error);
     global.timestamp.connect = new Date();
   }
+  
   if (global.db.data == null) await loadDatabase();
+  
   if (connection === 'open') {
-    console.log(chalk.yellow('Conectado correctamente el bot principal.'));
+    console.log(chalk.bold.green('\n════════════════════════════════════'));
+    console.log(chalk.bold.yellow('   🐉 GOHAN BESTIA HA DESPERTADO 🐉'));
+    console.log(chalk.bold.cyan(`   👤 Usuario: ${conn.user?.name || 'Gohan'}`));
+    console.log(chalk.bold.cyan(`   📱 Número: ${conn.user?.id?.split(':')[0] || 'Desconocido'}`));
+    console.log(chalk.bold.green('════════════════════════════════════\n'));
   }
+  
   const reason = new Boom(lastDisconnect?.error)?.output?.statusCode;
+  
   if (reason === 405) {
     if (existsSync('./sessions/creds.json')) unlinkSync('./sessions/creds.json');
     console.log(
       chalk.bold.redBright(
-        `Conexión reemplazada para el bot principal, por favor espera un momento. Reiniciando...\nSi aparecen errores, vuelve a iniciar con: npm start`
+        `⚠️ Conexión reemplazada, reiniciando...`
       )
     );
     process.send('reset');
   }
+  
   if (connection === 'close') {
     switch (reason) {
       case DisconnectReason.badSession:
-        conn.logger.error(`Sesión principal incorrecta, elimina la carpeta ${global.authFile} y escanea nuevamente.`);
+        conn.logger.error(`❌ Sesión incorrecta, elimina la carpeta ${global.authFile}`);
         break;
       case DisconnectReason.connectionClosed:
       case DisconnectReason.connectionLost:
       case DisconnectReason.timedOut:
-        conn.logger.warn(`Conexión principal perdida o cerrada, reconectando...`);
+        conn.logger.warn(`⚠️ Conexión perdida, reconectando...`);
         await global.reloadHandler(true).catch(console.error);
         break;
       case DisconnectReason.connectionReplaced:
-        conn.logger.error(
-          `Conexión principal reemplazada, se abrió otra sesión. Cierra esta sesión primero.`
-        );
+        conn.logger.error(`⚠️ Conexión reemplazada, se abrió otra sesión`);
         break;
       case DisconnectReason.loggedOut:
-        conn.logger.error(`Sesión principal cerrada, elimina la carpeta ${global.authFile} y escanea nuevamente.`);
+        conn.logger.error(`❌ Sesión cerrada, elimina la carpeta ${global.authFile}`);
         break;
       case DisconnectReason.restartRequired:
-        conn.logger.info(`Reinicio necesario del bot principal, reinicia el servidor si hay problemas.`);
+        conn.logger.info(`🔄 Reinicio necesario`);
         await global.reloadHandler(true).catch(console.error);
         break;
       default:
-        conn.logger.warn(`Desconexión desconocida del bot principal: ${reason || ''} - Estado: ${connection || ''}`);
+        conn.logger.warn(`❓ Desconexión desconocida: ${reason || ''}`);
         await global.reloadHandler(true).catch(console.error);
         break;
     }
   }
 }
 
-process.on('uncaughtException', console.error);
+// Manejo de errores no capturados
+process.on('uncaughtException', (err) => {
+  console.error(chalk.red('💥 [GOHAN BESTIA] Error no capturado:'), err);
+});
 
 let isInit = true;
 
+/**
+ * Recargar el handler
+ */
 global.reloadHandler = async function (restartConn) {
   try {
     const Handler = await import(`./handler.js?update=${Date.now()}`).catch(console.error);
@@ -502,46 +556,53 @@ global.reloadHandler = async function (restartConn) {
   return true;
 };
 
+// Cargar plugins
 const pluginFolder = global.__dirname(join(__dirname, './plugins/index'));
 const pluginFilter = (filename) => /\.js$/.test(filename);
 global.plugins = {};
 
 async function filesInit() {
+  console.log(chalk.blue('📂 [GOHAN BESTIA] Cargando plugins...'));
+  let loaded = 0;
   for (const filename of readdirSync(pluginFolder).filter(pluginFilter)) {
     try {
       const file = global.__filename(join(pluginFolder, filename));
       const module = await import(file);
       global.plugins[filename] = module.default || module;
+      loaded++;
     } catch (e) {
       conn.logger.error(`Error al cargar el plugin '${filename}': ${e}`);
       delete global.plugins[filename];
     }
   }
+  console.log(chalk.green(`✅ [GOHAN BESTIA] ${loaded} plugins cargados correctamente`));
 }
+
 await filesInit();
 
+// Watch de plugins
 global.reload = async (_ev, filename) => {
   if (pluginFilter(filename)) {
     const dir = global.__filename(join(pluginFolder, filename), true);
     if (filename in global.plugins) {
-      if (existsSync(dir)) conn.logger.info(`Updated plugin - '${filename}'`);
+      if (existsSync(dir)) conn.logger.info(`🔄 Plugin actualizado - '${filename}'`);
       else {
-        conn.logger.warn(`Deleted plugin - '${filename}'`);
+        conn.logger.warn(`🗑️ Plugin eliminado - '${filename}'`);
         return delete global.plugins[filename];
       }
-    } else conn.logger.info(`New plugin - '${filename}'`);
+    } else conn.logger.info(`✨ Nuevo plugin - '${filename}'`);
 
     const err = syntaxerror(readFileSync(dir), filename, {
       sourceType: 'module',
       allowAwaitOutsideFunction: true,
     });
-    if (err) conn.logger.error(`Syntax error while loading '${filename}':\n${format(err)}`);
+    if (err) conn.logger.error(`❌ Error de sintaxis en '${filename}':\n${format(err)}`);
     else {
       try {
         const module = await import(`${global.__filename(dir)}?update=${Date.now()}`);
         global.plugins[filename] = module.default || module;
       } catch (e) {
-        conn.logger.error(`Error requiring plugin '${filename}':\n${format(e)}`);
+        conn.logger.error(`❌ Error al cargar plugin '${filename}':\n${format(e)}`);
       } finally {
         global.plugins = Object.fromEntries(Object.entries(global.plugins).sort(([a], [b]) => a.localeCompare(b)));
       }
@@ -552,3 +613,9 @@ Object.freeze(global.reload);
 
 watch(pluginFolder, global.reload);
 await global.reloadHandler();
+
+// Mensaje final att wilker
+console.log(chalk.bold.magenta('\n' + '⭐'.repeat(30)));
+console.log(chalk.bold.yellow('   🐉 GOHAN BESTIA - LISTO PARA PELEAR 🐉'));
+console.log(chalk.bold.cyan('   「El poder de un Saiyajin no tiene límites」'));
+console.log(chalk.bold.magenta('⭐'.repeat(30) + '\n'));
