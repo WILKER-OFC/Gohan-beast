@@ -16,68 +16,127 @@ const handler = async (m, { conn, args, usedPrefix, command }) => {
         await m.react('⏳');
 
         let tiktokData;
+        let audioUrl = null;
 
         // Intentar con la primera API
         try {
             tiktokData = await tiktokdl(args[0]);
+            console.log('API 1 respuesta:', JSON.stringify(tiktokData, null, 2));
+            
+            // Intentar diferentes formas de obtener el audio de la API 1
+            if (tiktokData.code === 0 && tiktokData.data) {
+                const data = tiktokData.data;
+                audioUrl = data.music || data.sound || data.audio || data.soundUrl;
+                
+                // Si no hay audio, intentar construir la URL del audio desde el video ID
+                if (!audioUrl && data.video_id) {
+                    audioUrl = `https://tikwm.com/api/music/download?video_id=${data.video_id}`;
+                }
+            }
         } catch (error) {
-            console.log('API 1 falló, intentando API 2...');
-            tiktokData = await tiktokdl2(args[0]);
+            console.log('API 1 falló:', error);
         }
 
-        // Verificar si tenemos datos válidos de alguna API
-        if (!tiktokData) {
-            await m.react('❌');
-            return conn.reply(m.chat, '❌ No se pudo obtener datos del video', m);
+        // Si no se encontró audio con API 1, intentar API 2
+        if (!audioUrl) {
+            try {
+                tiktokData = await tiktokdl2(args[0]);
+                console.log('API 2 respuesta:', JSON.stringify(tiktokData, null, 2));
+                
+                if (tiktokData.status === 200 && tiktokData.result) {
+                    const data = tiktokData.result;
+                    audioUrl = data.audioUrl || data.url_audio || data.music || data.sound;
+                }
+            } catch (error) {
+                console.log('API 2 falló:', error);
+            }
         }
 
-        let result;
-
-        // Procesar según la API que respondió
-        if (tiktokData.code === 0 && tiktokData.data) {
-            // Estructura de la primera API (tikwm)
-            result = tiktokData.data;
-        } else if (tiktokData.status === 200 && tiktokData.result) {
-            // Estructura de la segunda API (adonix)
-            result = tiktokData.result;
-        } else {
-            await m.react('❌');
-            return conn.reply(m.chat, '❌ Formato de datos no reconocido', m);
+        // Si aún no hay audio, intentar una tercera API
+        if (!audioUrl) {
+            try {
+                tiktokData = await tiktokdl3(args[0]);
+                console.log('API 3 respuesta:', JSON.stringify(tiktokData, null, 2));
+                
+                if (tiktokData.status && tiktokData.data) {
+                    const data = tiktokData.data;
+                    audioUrl = data.audio || data.audio_url || data.music_url;
+                }
+            } catch (error) {
+                console.log('API 3 falló:', error);
+            }
         }
 
-        // Obtener la URL del audio
-        // Para tikwm: music o soundUrl
-        // Para adonix: url_audio o audioUrl
-        const audioUrl = result.music || result.soundUrl || result.url_audio || result.audioUrl;
-
+        // Verificar si tenemos URL de audio
         if (!audioUrl) {
             await m.react('❌');
-            return conn.reply(m.chat, '❌ No se pudo obtener el enlace del audio', m);
+            
+            // Intentar enviar información de depuración
+            let debugInfo = '❌ No se pudo obtener el audio.\n\n';
+            debugInfo += 'Posibles soluciones:\n';
+            debugInfo += '• El video puede no tener audio disponible\n';
+            debugInfo += '• Intenta con otro video\n';
+            debugInfo += '• Usa .tt (video) en lugar de audio\n';
+            
+            return conn.reply(m.chat, debugInfo, m);
         }
 
-        // Crear caption con datos disponibles
+        // Obtener metadatos para el caption
+        let title = 'Sin título';
+        let author = 'Desconocido';
+        let duration = 0;
+        let views = 0;
+        let likes = 0;
+        let comments = 0;
+
+        if (tiktokData) {
+            if (tiktokData.code === 0 && tiktokData.data) {
+                const d = tiktokData.data;
+                title = d.title || d.desc || 'Sin título';
+                author = d.author?.nickname || d.nickname || 'Desconocido';
+                duration = d.duration || 0;
+                views = d.play_count || d.playCount || 0;
+                likes = d.digg_count || d.likeCount || 0;
+                comments = d.comment_count || d.commentCount || 0;
+            } else if (tiktokData.status === 200 && tiktokData.result) {
+                const d = tiktokData.result;
+                title = d.title || d.desc || 'Sin título';
+                author = d.author || d.nickname || 'Desconocido';
+                duration = d.duration || 0;
+                views = d.playCount || d.viewCount || 0;
+                likes = d.likeCount || 0;
+                comments = d.commentCount || 0;
+            }
+        }
+
+        // Crear caption
         const caption = 
             `*🎵 GOHAN BEAST BOT - TIKTOK AUDIO 🎵*\n\n` +
-            `*Título:* ${result.title || result.desc || 'Sin título'}\n` +
-            `*Autor:* ${result.author?.nickname || result.nickname || result.author || 'Desconocido'}\n` +
-            `*Duración:* ${result.duration || 0}s\n` +
-            `*Vistas:* ${result.play_count || result.playCount || result.viewCount || 0}\n` +
-            `*Me gusta:* ${result.digg_count || result.likeCount || 0}\n` +
-            `*Comentarios:* ${result.comment_count || result.commentCount || 0}\n\n` +
+            `*Título:* ${title}\n` +
+            `*Autor:* ${author}\n` +
+            `*Duración:* ${duration}s\n` +
+            `*Vistas:* ${views.toLocaleString()}\n` +
+            `*Me gusta:* ${likes.toLocaleString()}\n` +
+            `*Comentarios:* ${comments.toLocaleString()}\n\n` +
             `*🎵 Audio descargado con éxito*`;
 
-        // Enviar el audio en lugar del video
-        await conn.sendFile(m.chat, audioUrl, 'gohan_tiktok_audio.mp3', caption, m, null, {
+        // Enviar el audio
+        await conn.sendFile(m.chat, audioUrl, 'tiktok_audio.mp3', caption, m, null, {
             mimetype: 'audio/mpeg',
-            asDocument: false
+            fileName: 'tiktok_audio.mp3'
         });
         
         await m.react('✅');
 
     } catch (e) {
-        console.error(e);
+        console.error('Error general:', e);
         await m.react('❌');
-        return conn.reply(m.chat, '❌ Error al descargar: ' + e.message, m);
+        
+        let errorMsg = '❌ Error al descargar el audio.\n\n';
+        errorMsg += 'Detalles: ' + e.message + '\n\n';
+        errorMsg += 'Intenta con .tt para descargar el video';
+        
+        return conn.reply(m.chat, errorMsg, m);
     }
 };
 
@@ -89,7 +148,7 @@ handler.register = false;
 
 export default handler;
 
-// Primera API
+// Primera API (TikWM)
 async function tiktokdl(url) {
     const api = `https://www.tikwm.com/api/?url=${encodeURIComponent(url)}&hd=1`;
     const res = await fetch(api);
@@ -97,11 +156,19 @@ async function tiktokdl(url) {
     return await res.json();
 }
 
-// Segunda API con tu clave personalizada
+// Segunda API (Adonix) con tu clave
 async function tiktokdl2(url) {
     const apiKey = 'KEYGOHANBOT'; // Tu clave aquí
     const api = `https://api-adonix.ultraplus.click/download/tiktok?apikey=${apiKey}&url=${encodeURIComponent(url)}`;
     const res = await fetch(api);
     if (!res.ok) throw new Error(`API 2 error: ${res.status}`);
+    return await res.json();
+}
+
+// Tercera API de respaldo
+async function tiktokdl3(url) {
+    const api = `https://api.tikmate.cc/api?url=${encodeURIComponent(url)}`;
+    const res = await fetch(api);
+    if (!res.ok) throw new Error(`API 3 error: ${res.status}`);
     return await res.json();
 }
