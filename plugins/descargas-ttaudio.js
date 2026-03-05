@@ -28,8 +28,6 @@ await conn.sendMessage(m.chat, { react: { text: '✅', key: m.key }});
 handler.help = ['tiktokmp3 *<url>*']
 handler.tags = ['dl']
 handler.command = ['ttaudio', 'tta']
-handler.group = true
-handler.register = true
-handler.coin = 2
+handler.group = false
 
 export default handler
