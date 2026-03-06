@@ -1,4 +1,4 @@
-const handler = async (m, { conn, isROwner, text}) => {
+import handler = async (m, { conn, isROwner, text}) => {
   const delay = (time) => new Promise((res) => setTimeout(res, time));
   const getGroups = await conn.groupFetchAllParticipating();
   const groups = Object.entries(getGroups).map(([id, data]) => data.id);
