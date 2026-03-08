@@ -1,10 +1,10 @@
 import yts from "yt-search"
 import fetch from "node-fetch"
 
-const handler = async (m, { conn, text, usedPrefix, command }) => {
-  if (!text) return m.reply(" `Ingresa el nombre del video de YouTube`.")
+const handler = async (m, { conn, text }) => {
+  if (!text) return m.reply("🎶 𝙸𝙽𝙶𝚁𝙴𝚂𝙰 𝙴𝙻 𝙽𝙾𝙼𝙱𝚁𝙴 𝙳𝙴 𝙻𝙰 𝙼𝚄𝚂𝙸𝙲 𝙳𝙴 𝚈𝙾𝚄𝚃𝚄𝙱𝙴.")
 
-  await m.react("🕘")
+  await m.react("🐉")
 
   try {
     let url = text
@@ -32,48 +32,48 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
     const thumb3 = Buffer.from(await res3.arrayBuffer())
 
     const fkontak = {
-      key: { fromMe: false, participant: "0@s.whatsapp.net" },
+      key: {
+        fromMe: false,
+        participant: "0@s.whatsapp.net",
+        remoteJid: "status@broadcast"
+      },
       message: {
-        documentMessage: {
-          title: `『 ${title} 』`,
-          fileName: global.botname || "Gohan beast bot",
+        locationMessage: {
+          name: `『 ${title} 』`,
           jpegThumbnail: thumb3
         }
       }
     }
 
     const caption = `
-✧━『 𝙸𝚗𝚏𝚘 𝚍𝚎𝚕 𝚊𝚞𝚍𝚒𝚘 』━✧
+  ✧━─『 𝙸𝙽𝙵𝙾 𝙳𝙴𝙻 𝙰𝚄𝙳𝙸𝙾 』─━✧
 
-🎼 𝚃𝚒𝚝𝚞𝚕𝚘: ${title}
-📺 𝙲𝚊𝚗𝚊𝚕: ${authorName}
-👁️ 𝚅𝚒𝚜𝚝𝚊𝚜: ${vistas}
-⏳ 𝙳𝚞𝚛𝚊𝚌𝚒ó𝚗: ${durationTimestamp}
-🌐 𝙴𝚗𝚕𝚊𝚌𝚎: ${url}
+🎼 𝚃𝙸𝚃𝚄𝙻𝙾: ${title}
+📺 𝙲𝙰𝙽𝙰𝙻: ${authorName}
+👁️ 𝚅𝙸𝚂𝚃𝙰𝚂: ${vistas}
+⏳ 𝙳𝚄𝚁𝙰𝙲𝙸𝙾𝙽: ${durationTimestamp}
+🌐 𝙴𝙽𝙻𝙰𝙲𝙴: ${url}
 
-✧━『 𝙶𝙾𝙷𝙰𝙽 𝙱𝙴𝙰𝚂𝚃 𝙱𝙾𝚃 』━✧
-   ⚡ 𝙱𝚢 𝚆𝙸𝙻𝙺𝙴𝚁 𝙾𝙵𝙲 ⚡
-
-🎵 𝙳𝚎𝚜𝚌𝚊𝚛𝚐𝚊𝚗𝚍𝚘 𝙰𝚞𝚍𝚒𝚘...
+✧━──『 𝙶𝙾𝙷𝙰𝙽 𝙱𝙴𝙰𝚂𝚃 𝙱𝙾𝚃 』──━✧
+     🐉 𝙿𝙾𝚆𝙴𝚁𝙴 𝙱𝚈 𝚆𝙸𝙻𝙺𝙴𝚁 🐉
 `
 
     const thumb = (await conn.getFile(thumbnail)).data
 
-    // Enviar primero la info del video
     await conn.sendMessage(
       m.chat,
       {
         image: thumb,
         caption,
-        footer: "⚡ Gohan — Descargas rápidas ⚡",
+        footer: "🐉 𝙶𝙾𝙷𝙰𝙽 𝙳𝙴𝚂𝙲𝙰𝚁𝙶𝙰𝚂 𝚁𝙰𝙿𝙸𝙳𝙰𝚂 🐉",
         headerType: 4
       },
       { quoted: fkontak }
     )
 
-    // Descargar y enviar el audio automáticamente
-    await downloadAudio(conn, m, url)
+    await downloadMedia(conn, m, url, fkontak)
 
+    await m.react("✅")
   } catch (e) {
     m.reply("❌ Error: " + e.message)
     m.react("⚠️")
@@ -85,71 +85,61 @@ const fetchBuffer = async (url) => {
   return await response.buffer()
 }
 
-const downloadAudio = async (conn, m, url) => {
+const downloadMedia = async (conn, m, url, quotedMsg) => {
   try {
-    const sent = await conn.sendMessage(m.chat, { text: "🎵 Descargando audio, por favor espera..." }, { quoted: m })
+    const sent = await conn.sendMessage(
+      m.chat,
+      { text: "🎵 𝙳𝙴𝚂𝙲𝙰𝚁𝙶𝙰𝙽𝙳𝙾 𝙰𝚄𝙳𝙸𝙾..." },
+      { quoted: m }
+    )
 
     const apiUrl = `https://api-adonix.ultraplus.click/download/ytaudio?url=${encodeURIComponent(url)}&apikey=KEYGOHANBOT`
-
     const r = await fetch(apiUrl)
     const data = await r.json()
 
-    if (!data?.status || !data?.data?.url) {
-      await conn.sendMessage(
-        m.chat,
-        { text: "🚫 No se pudo descargar el audio.", edit: sent.key }
-      )
-      return
-    }
+    if (!data?.status || !data?.data?.url)
+      return m.reply("🚫 No se pudo descargar el archivo.")
 
     const fileUrl = data.data.url
     const fileTitle = cleanName(data.data.title || "audio")
 
-    // Descargar el buffer del audio
-    const audioBuffer = await fetchBuffer(fileUrl)
-
-    // Enviar el audio
     await conn.sendMessage(
       m.chat,
-      { 
-        audio: audioBuffer, 
-        mimetype: "audio/mpeg", 
+      {
+        audio: { url: fileUrl },
+        mimetype: "audio/mpeg",
         fileName: fileTitle + ".mp3",
-        caption: `✅ Audio descargado\n\n🎼 Título: ${fileTitle}` 
+        ptt: false
       },
-      { quoted: m }
+      { quoted: quotedMsg }
     )
 
-    // Actualizar mensaje de estado
     await conn.sendMessage(
       m.chat,
-      { text: `✅ Audio descargado con éxito`, edit: sent.key }
+      { text: `✅ Descarga completada\n\n🎼 Título: ${fileTitle}`, edit: sent.key }
     )
 
     await m.react("✅")
   } catch (e) {
     console.error(e)
-    await conn.sendMessage(
-      m.chat,
-      { text: "❌ Error al descargar el audio: " + e.message }
-    )
-    await m.react("💀")
+    m.reply("❌ Error: " + e.message)
+    m.react("💀")
   }
 }
 
-const cleanName = (name) => name.replace(/[^\w\s-_.]/gi, "").substring(0, 50)
+const cleanName = (name) =>
+  name.replace(/[^\w\s-_.]/gi, "").substring(0, 50)
 
 const formatViews = (views) => {
   if (views === undefined || views === null) return "No disponible"
-  if (views >= 1000000000) return `${(views / 1000000000).toFixed(1)}B`
-  if (views >= 1000000) return `${(views / 1000000).toFixed(1)}M`
-  if (views >= 1000) return `${(views / 1000).toFixed(1)}K`
+  if (views >= 1e9) return `${(views / 1e9).toFixed(1)}B`
+  if (views >= 1e6) return `${(views / 1e6).toFixed(1)}M`
+  if (views >= 1e3) return `${(views / 1e3).toFixed(1)}K`
   return views.toString()
 }
 
-handler.command = ["play",]
+handler.command = ["play", "yt", "ytsearch"]
 handler.tags = ["descargas"]
-handler.help = ["play"]
-handler.register = false
+handler.register = true
 
 export default handler
