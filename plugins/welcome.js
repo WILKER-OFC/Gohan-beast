@@ -420,11 +420,11 @@ handler.before = async (m, { conn }) => {
 }
 
 // 🐉 Configuración del handler
-handler.command = ['on', 'off']
+handler.command = ['enable', 'disable']
 handler.group = true
 handler.register = false
 handler.tags = ['group', 'welcome', 'beast']
 handler.help = [
-  'on welcome', 'off welcome']
+  'enable welcome', 'disable welcome']
 
 export default handler
