@@ -118,7 +118,7 @@ let handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
 }
 
 handler.help = ['dar']
-handler.tags = ['creator']
+handler.tags = ['eco']
 handler.command = ['dar', 'give', 'regalar', 'bendecir', 'creador']
 handler.rowner = false // Cambiamos a false porque ya validamos manualmente
 handler.group = false
