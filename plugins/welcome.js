@@ -1,4 +1,3 @@
-
 //--> Hecho por Ado-rgb (github.com/Ado-rgb) MODIFICADO MODO GO-HAN BEAST
 // •|• No quites créditos..
 import fetch from 'node-fetch'
@@ -27,7 +26,7 @@ ${colors.magenta}╚════════════════════
 // 🐉 Log con estilo
 function beastLog(message, type = 'info') {
   if (!BEAST_MODE) return
-  
+
   const icons = {
     info: `${colors.blue}🔵${colors.reset}`,
     success: `${colors.green}🟢${colors.reset}`,
@@ -35,7 +34,7 @@ function beastLog(message, type = 'info') {
     error: `${colors.red}🔴${colors.reset}`,
     beast: `${colors.magenta}🐉${colors.reset}`
   }
-  
+
   console.log(`${icons[type]} ${colors.cyan}[BEAST-WELCOME]${colors.reset} ${message}`)
 }
 
@@ -63,7 +62,7 @@ function getRandomBeastImage(type = 'welcome') {
   const images = beastImages[type]
   // Dar más probabilidad a tus fotos (primeras 4 posiciones en welcome, primeras 2 en goodbye)
   const random = Math.random()
-  
+
   if (type === 'welcome') {
     // 70% de probabilidad para tus fotos (primeras 4 son tuyas)
     if (random < 0.7) {
@@ -209,24 +208,28 @@ async function verifyImageUrl(url) {
   }
 }
 
-// 🐉 Handler principal
+// 🐉 Handler principal - MODIFICADO para .welcome on/off
 const handler = async (m, { conn, command, args, isAdmin, isOwner }) => {
   if (!m.isGroup) return m.reply('🔒 *Esta función solo funciona en grupos.*')
 
+  // Verificar el comando usado
+  if (command !== 'welcome') return
+
   if (!global.db.data.chats[m.chat]) global.db.data.chats[m.chat] = {}
   const chat = global.db.data.chats[m.chat]
-  const type = (args[0] || '').toLowerCase()
-  const enable = command === 'on'
-
-  if (!['welcome'].includes(type)) {
+  
+  // Verificar si se proporcionó on/off
+  if (!args[0] || !['on', 'off'].includes(args[0].toLowerCase())) {
     return m.reply(`🐉 *MODO GO-HAN BEAST - BIENVENIDAS* 🐉
 
 ${colors.green}Comandos disponibles:${colors.reset}
-${colors.cyan}.on welcome${colors.reset} - Activa bienvenidas épicas
-${colors.cyan}.off welcome${colors.reset} - Desactiva bienvenidas
+${colors.cyan}.welcome on${colors.reset} - Activa bienvenidas épicas
+${colors.cyan}.welcome off${colors.reset} - Desactiva bienvenidas
 
 ${colors.yellow}Ejemplo:${colors.reset}
-${colors.white}.on welcome${colors.reset}`)
+${colors.white}.welcome on${colors.reset}
+
+${colors.magenta}Estado actual: ${chat.welcome ? '✅ ACTIVADO' : '❌ DESACTIVADO'}${colors.reset}`)
   }
 
   if (!isAdmin && !isOwner) {
@@ -235,27 +238,29 @@ ${colors.white}.on welcome${colors.reset}`)
 ${colors.red}Necesitas ser admin para modificar esta función.${colors.reset}`)
   }
 
-  if (type === 'welcome') {
-    chat.welcome = enable
-    
-    // Mostrar animación de activación
-    if (BEAST_MODE && enable) {
-      beastLog('Activando sistema de bienvenidas...', 'beast')
-      beastLog('Usando imágenes personalizadas Gohan Beast', 'info')
-      beastLog(`Foto 1: https://iili.io/f4aSu0G.jpg`, 'info')
-      beastLog(`Foto 2: https://iili.io/f4agftI.jpg`, 'info')
-      
-      for (let i = 0; i < beastWelcomeAnim.length; i++) {
-        process.stdout.write(`\r${colors.magenta}${beastWelcomeAnim[i]}${colors.reset}`)
-        await new Promise(resolve => setTimeout(resolve, 300))
-      }
-      console.log('\n')
+  const action = args[0].toLowerCase()
+  const enable = action === 'on'
+
+  chat.welcome = enable
+
+  // Mostrar animación de activación
+  if (BEAST_MODE && enable) {
+    beastLog('Activando sistema de bienvenidas...', 'beast')
+    beastLog('Usando imágenes personalizadas Gohan Beast', 'info')
+    beastLog(`Foto 1: https://iili.io/f4aSu0G.jpg`, 'info')
+    beastLog(`Foto 2: https://iili.io/f4agftI.jpg`, 'info')
+
+    for (let i = 0; i < beastWelcomeAnim.length; i++) {
+      process.stdout.write(`\r${colors.magenta}${beastWelcomeAnim[i]}${colors.reset}`)
+      await new Promise(resolve => setTimeout(resolve, 300))
     }
-    
-    const status = enable ? 'activado' : 'desactivado'
-    const emoji = enable ? '🐉' : '💤'
-    
-    return m.reply(`${emoji} *SISTEMA DE BIENVENIDAS ${status.toUpperCase()}* ${emoji}
+    console.log('\n')
+  }
+
+  const status = enable ? 'activado' : 'desactivado'
+  const emoji = enable ? '🐉' : '💤'
+
+  return m.reply(`${emoji} *SISTEMA DE BIENVENIDAS ${status.toUpperCase()}* ${emoji}
 
 ${colors.green}El sistema de bienvenidas/despedidas ha sido ${status}.${colors.reset}
 
@@ -268,7 +273,6 @@ ${colors.yellow}✨ CONFIGURACIÓN ESPECIAL:${colors.reset}
 ${colors.cyan}🎯 IMÁGENES ACTIVAS:${colors.reset}
 1. https://iili.io/f4aSu0G.jpg
 2. https://iili.io/f4agftI.jpg`)
-  }
 }
 
 // 🐉 Eventos antes de los mensajes (bienvenidas/despedidas)
@@ -283,10 +287,10 @@ handler.before = async (m, { conn }) => {
     const groupSize = groupMetadata.participants.length
     const userId = m.messageStubParameters?.[0] || m.sender
     const userTag = `@${userId.split('@')[0]}`
-    
+
     let profilePic
     let imageType = 'beast'
-    
+
     try {
       // Intentar obtener foto de perfil del usuario
       profilePic = await conn.profilePictureUrl(userId, 'image')
@@ -295,7 +299,7 @@ handler.before = async (m, { conn }) => {
       // Si no tiene foto de perfil, usar una imagen beast aleatoria
       profilePic = getRandomBeastImage(m.messageStubType === 27 ? 'welcome' : 'goodbye')
       imageType = 'beast'
-      
+
       // Verificar si la imagen existe
       const imageExists = await verifyImageUrl(profilePic)
       if (!imageExists) {
@@ -308,24 +312,24 @@ handler.before = async (m, { conn }) => {
     if (m.messageStubType === 27) {
       beastLog(`Nuevo miembro detectado: ${userTag}`, 'info')
       beastLog(`Usando imagen: ${imageType === 'beast' ? 'Gohan Beast' : 'Foto de perfil'}`, 'info')
-      
+
       // Seleccionar mensaje aleatorio
       const welcomeMsg = beastWelcomeMessages[Math.floor(Math.random() * beastWelcomeMessages.length)]
         .replace(/{user}/g, userTag)
         .replace(/{group}/g, groupMetadata.subject)
         .replace(/{total}/g, groupSize)
-      
+
       // Animación en consola
       if (BEAST_MODE) {
         console.log(beastLogo)
         beastLog(`Enviando bienvenida épica a ${userTag}...`, 'beast')
-        
+
         // Mostrar qué imagen se está usando
         if (imageType === 'beast') {
           beastLog(`Imagen Gohan Beast seleccionada: ${profilePic.includes('f4aSu0G') ? 'Foto 1' : 'Foto 2'}`, 'success')
         }
       }
-      
+
       try {
         // Enviar bienvenida con imagen
         await conn.sendMessage(m.chat, {
@@ -342,7 +346,7 @@ handler.before = async (m, { conn }) => {
             }
           }
         })
-        
+
         // 🎉 Reacción especial
         try {
           await conn.sendMessage(m.chat, {
@@ -352,9 +356,9 @@ handler.before = async (m, { conn }) => {
             }
           })
         } catch {}
-        
+
         beastLog(`Bienvenida enviada exitosamente a ${userTag}`, 'success')
-        
+
       } catch (error) {
         beastLog(`Error al enviar bienvenida: ${error.message}`, 'error')
         // Intentar con imagen por defecto
@@ -371,28 +375,28 @@ handler.before = async (m, { conn }) => {
     // 🐉 DESPEDIDA (miembro sale o es eliminado)
     if (m.messageStubType === 28 || m.messageStubType === 32) {
       beastLog(`Miembro sale del grupo: ${userTag}`, 'warning')
-      
+
       const remainingMembers = groupSize - 1
       const goodbyeMsg = beastGoodbyeMessages[Math.floor(Math.random() * beastGoodbyeMessages.length)]
         .replace(/{user}/g, userTag)
         .replace(/{group}/g, groupMetadata.subject)
         .replace(/{remaining}/g, remainingMembers)
-      
+
       try {
         // Usar imagen beast para despedida
         const goodbyeImage = getRandomBeastImage('goodbye')
-        
+
         if (BEAST_MODE) {
           beastLog(`Usando imagen de despedida: ${goodbyeImage.includes('f4aSu0G') ? 'Foto 1' : 'Foto 2'}`, 'info')
         }
-        
+
         // Enviar despedida
         await conn.sendMessage(m.chat, {
           image: { url: goodbyeImage },
           caption: goodbyeMsg,
           mentions: [userId]
         })
-        
+
         // 🌙 Reacción de despedida
         try {
           await conn.sendMessage(m.chat, {
@@ -402,9 +406,9 @@ handler.before = async (m, { conn }) => {
             }
           })
         } catch {}
-        
+
         beastLog(`Despedida enviada exitosamente para ${userTag}`, 'success')
-        
+
       } catch (error) {
         beastLog(`Error al enviar despedida: ${error.message}`, 'error')
         // Intentar con imagen por defecto
@@ -419,12 +423,14 @@ handler.before = async (m, { conn }) => {
   }
 }
 
-// 🐉 Configuración del handler
-handler.command = ['enable', 'disable']
+// 🐉 Configuración del handler - MODIFICADO
+handler.command = ['welcome'] // Ahora solo responde a .welcome
 handler.group = true
 handler.register = false
 handler.tags = ['group', 'welcome', 'beast']
 handler.help = [
-  'enable welcome', 'disable welcome']
+  'welcome on', 
+  'welcome off'
+]
 
 export default handler
