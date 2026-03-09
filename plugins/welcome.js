@@ -17,10 +17,10 @@ const colors = {
 
 // 🐉 Logo Gohan Beast
 const beastLogo = `
-${colors.magenta}╔════════════════════════════════════╗
+${colors.magenta}╔══════════════════════════════╗
 ${colors.magenta}║    🐉 ${colors.cyan}GO-HAN BEAST MODE${colors.magenta} 🐉     ║
 ${colors.magenta}║    Welcome System ${colors.yellow}v2.0${colors.magenta}       ║
-${colors.magenta}╚════════════════════════════════════╝${colors.reset}
+${colors.magenta}╚══════════════════════════════╝${colors.reset}
 `
 
 // 🐉 Log con estilo
