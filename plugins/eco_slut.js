@@ -24,8 +24,8 @@ let handler = async (m, { conn, text, command, usedPrefix }) => {
   while (randomUserId === senderId) randomUserId = Object.keys(users).random()
 
   // GOHAN BESTIA - PODER AUMENTADO
-  let minAmount = 100 // Antes 15
-  let maxAmount = 500 // Antes 50
+  let minAmount = 5000 // Antes 50
+  let maxAmount = 5000 // Antes 50
   let amountTaken = Math.floor(Math.random() * (maxAmount - minAmount + 1)) + minAmount
   let randomOption = Math.floor(Math.random() * 14)
 
