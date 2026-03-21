@@ -25,7 +25,7 @@
   },
   "license": "MIT-LICENSE",
   "dependencies": {
-    "@bochilteam/scraper": "^4.2.4",
+    "@bochilteam/scraper": "^4.0.0",
     "@hapi/boom": "^10.0.1",
     "@StarlightsTeam/Scraper": "github:Ado926/Starlights-Scraper",
     "@whiskeysockets/baileys": "npm:angularsockets",
