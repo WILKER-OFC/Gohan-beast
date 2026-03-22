@@ -16,7 +16,7 @@ const handler = async (m, { conn, text }) => {
 
     if (!text.startsWith("https://")) {
       const res = await yts(text)
-      if (!res?.videos?.length) return m.reply("🌀 No encontré nada.")
+      if (!res?.videos?.length) return m.reply("🌀𝙽𝙾 𝙴𝙽𝙲𝙾𝙽𝚃𝚁𝙴 𝙽𝙰𝙳𝙰.")
       const video = res.videos[0]
       title = video.title
       authorName = video.author?.name
@@ -46,16 +46,16 @@ const handler = async (m, { conn, text }) => {
     }
 
     const caption = `
-✧━『 𝙸𝚗𝚏𝚘 𝚍𝚎𝚕 𝚅𝚒𝚍𝚎𝚘 』━✧
+✧━『 🌀 𝙸𝙽𝙵𝙾 𝙳𝙴𝙻 𝙰𝚄𝙳𝙸𝙾 🌀 』━✧
 
-🎼 𝑻𝒊́𝒕𝒖𝒍𝒐: ${title}
-📺 𝑪𝒂𝒏𝒂𝒍: ${authorName}
-👁️ 𝑽𝒊𝒔𝒕𝒂𝒔: ${vistas}
-⏳ 𝑫𝒖𝒓𝒂𝒄𝒊𝒐́𝒏: ${durationTimestamp}
-🌐 𝑬𝒏𝒍𝒂𝒄𝒆: ${url}
+🎼 𝚃𝙸𝚃𝚄𝙻𝙾: ${title}
+📺 𝙲𝙰𝙽𝙰𝙻: ${authorName}
+👁️ 𝚅𝙸𝚂𝚃𝙰𝚂: ${vistas}
+⏳ 𝙳𝚄𝚁𝙰𝙲𝙸𝙾𝙽: ${durationTimestamp}
+🌐 𝙴𝙽𝙻𝙰𝙲𝙴: ${url}
 
-✧━『 GOHAN BEAST BOT 』─━✧
-⚡ Powered by WILKER OFC⚡
+✧━『 🐉 𝙶𝙾𝙷𝙰𝙽 𝙱𝙴𝙰𝚂𝚃 𝙱𝙾𝚃 🐉 』─━✧
+  🌀 𝙿𝙾𝚆𝙴𝚁𝙴𝙳 𝙱𝚈 𝚆𝙸𝙻𝙺𝙴𝚁 𝙾𝙵𝙲 🌀
 `
 
     const thumb = (await conn.getFile(thumbnail)).data
@@ -65,7 +65,7 @@ const handler = async (m, { conn, text }) => {
       {
         image: thumb,
         caption,
-        footer: "🌀 Gohan — Descargas rápidas 🐉",
+        footer: "🌀 𝙶𝙾𝙷𝙰𝙽 𝙱𝙴𝙰𝚂𝚃 𝙳𝙴𝚂𝙲𝙰𝚁𝙶𝙰𝚂 𝙱𝙴𝚂𝚃𝙸𝙰𝙻𝙴𝚂 🐉",
         headerType: 4
       },
       { quoted: fkontak }
@@ -93,7 +93,7 @@ const downloadMedia = async (conn, m, url, quotedMsg) => {
     const data = await r.json()
 
     if (!data?.status || !data?.resultado?.url_dl)
-      return m.reply("🌀 No se pudo obtener el audio.")
+      return m.reply("🌀 𝙽𝙾 𝚂𝙴 𝙿𝚄𝙳𝙾 𝙾𝙱𝚃𝙴𝙽𝙴𝚁 𝙴𝙻 𝙰𝚄𝙳𝙸𝙾 𝙵𝚁𝙴𝙴𝚉𝙴𝚁 𝙴𝚂 𝙼𝚄𝚈 𝙿𝙾𝙳𝙴𝚁𝙾𝚂𝙾 .")
 
     const fileUrl = data.resultado.url_dl
     const fileTitle = cleanName(data.resultado.titulo || "audio")
@@ -111,7 +111,7 @@ const downloadMedia = async (conn, m, url, quotedMsg) => {
 
     await conn.sendMessage(
       m.chat,
-      { text: `✅ Descarga completada\n\n🎼 Título: ${fileTitle}`, edit: sent.key }
+      { text: `✅ 𝙰𝚀𝚄𝙸 𝙴𝚂𝚃𝙰 𝚃𝚄 𝙼𝚄𝚂𝙸𝙲 𝙿𝚄𝙳𝙴 𝙳𝙴𝚁𝚁𝙾𝚃𝙰𝚁 𝙰 𝙵𝚁𝙴𝙴𝚉𝙴𝚁\n\n🎼 𝚃𝙸𝚃𝚄𝙻𝙾: ${fileTitle}`, edit: sent.key }
     )
 
   } catch (e) {
